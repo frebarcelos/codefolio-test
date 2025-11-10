@@ -67,10 +67,10 @@ class EdicaoSlidesTest(unittest.TestCase):
             # 3. Navegar para a seção de Slides
             self.navegar_para_secao_slides()
             
-            # 4. Encontrar e clicar no ícone de edição do slide 'funcionou'
+            # 4. Encontrar e clicar no ícone de edição do PRIMEIRO slide
             self.clicar_icone_edicao_slide()
             
-            # 5. Editar o título do slide para 'IGREJA'
+            # 5. Editar o título do slide para 'Atualizado com sucesso'
             self.editar_titulo_slide()
             
             # 6. Salvar as alterações do slide
@@ -79,17 +79,17 @@ class EdicaoSlidesTest(unittest.TestCase):
             # 7. Verificar se a edição foi salva
             self.verificar_edicao_slide()
             
-            print("✅ CT-01 - EDIÇÃO DE SLIDES CONCLUÍDO COM SUCESSO!")
+            print("CT-01 - EDIÇÃO DE SLIDES CONCLUÍDO COM SUCESSO!")
             
         except Exception as e:
-            print(f"❌ FALHA NO CT-01: {e}")
+            print(f"FALHA NO CT-01: {e}")
             self.driver.save_screenshot("erro_final_ct01.png")
-            print("📸 Screenshot do erro salvo como 'erro_final_ct01.png'")
+            print("Screenshot do erro salvo como 'erro_final_ct01.png'")
             self.fail(f"CT-01 - Edição de Slides falhou: {e}")
 
     def navegar_para_gerenciamento_cursos(self):
         """Navega para a página de gerenciamento de cursos"""
-        print("🧭 Navegando para Gerenciamento de Cursos...")
+        print("Navegando para Gerenciamento de Cursos...")
         
         # Clicar no menu de perfil
         profile_button = self.wait.until(
@@ -108,11 +108,12 @@ class EdicaoSlidesTest(unittest.TestCase):
         gerenciamento_button.click()
         
         self.wait.until(EC.url_contains("/manage-courses"))
-        print("✅ Navegação para Gerenciamento de Cursos concluída")
+        print("Navegação para Gerenciamento de Cursos concluída")
 
+    
     def selecionar_curso_existente(self):
         """Seleciona um curso existente"""
-        print("🎯 Selecionando curso existente...")
+        print("Selecionando curso existente...")
         
         time.sleep(3)
         
@@ -121,7 +122,7 @@ class EdicaoSlidesTest(unittest.TestCase):
             gerenciar_buttons = self.driver.find_elements(By.XPATH, "//button[contains(., 'Gerenciar Curso')]")
             
             if gerenciar_buttons:
-                print(f"✅ Encontrados {len(gerenciar_buttons)} botões 'Gerenciar Curso'")
+                print(f"Encontrados {len(gerenciar_buttons)} botões 'Gerenciar Curso'")
                 
                 # Clica no primeiro botão "Gerenciar Curso"
                 gerenciar_buttons[0].click()
@@ -129,41 +130,45 @@ class EdicaoSlidesTest(unittest.TestCase):
                 
                 # Verifica se navegou para a página do curso
                 if "adm-cursos" in self.driver.current_url:
-                    print("✅ Navegação para o curso bem-sucedida!")
+                    print("Navegação para o curso bem-sucedida!")
+                    print("Rolando até o final da página do curso...")
+                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    time.sleep(2)
+                    
                     return "Curso Selecionado"
                 else:
-                    print("❌ Não navegou para a página do curso")
+                    print("Não navegou para a página do curso")
                     return None
             else:
-                print("❌ Nenhum botão 'Gerenciar Curso' encontrado")
+                print("Nenhum botão 'Gerenciar Curso' encontrado")
                 return None
                 
         except Exception as e:
-            print(f"❌ Erro ao selecionar curso: {e}")
+            print(f"Erro ao selecionar curso: {e}")
             return None
 
+
     def navegar_para_secao_slides(self):
-        """Navega para a seção de slides do curso - VERSÃO CORRIGIDA"""
-        print("📊 Navegando para seção de Slides...")
+        """Navega para a seção de slides do curso"""
+        print("Navegando para seção de Slides...")
         
         time.sleep(3)
         
-        # DEBUG: Mostrar todas as abas disponíveis
-        print("🔍 Procurando abas disponíveis...")
+        print("Procurando abas disponíveis...")
         try:
             # Procura por elementos que parecem ser abas
             possiveis_abas = self.driver.find_elements(By.XPATH, "//*[contains(@class, 'tab')] | //button | //a | //div[@role='tab']")
-            print(f"📋 Encontrados {len(possiveis_abas)} elementos que podem ser abas")
+            print(f"Encontrados {len(possiveis_abas)} elementos que podem ser abas")
             
             for i, aba in enumerate(possiveis_abas):
                 try:
                     texto = aba.text.strip()
                     if texto:
-                        print(f"  {i+1}. '{texto}' - clicável: {aba.is_enabled()}")
+                        print(f"  {i+1}. '{texto}' - clicável: {aba.is_enabled()}")
                 except:
                     pass
         except Exception as e:
-            print(f"❌ Erro ao buscar abas: {e}")
+            print(f"Erro ao buscar abas: {e}")
         
         # Estratégias para encontrar a aba SLIDES
         slides_selectors = [
@@ -183,12 +188,12 @@ class EdicaoSlidesTest(unittest.TestCase):
         
         for selector in slides_selectors:
             try:
-                print(f"🔄 Tentando seletor: {selector}")
+                print(f"Tentando seletor: {selector}")
                 slides_element = self.driver.find_element(By.XPATH, selector)
                 
                 if slides_element.is_displayed() and slides_element.is_enabled():
-                    print(f"✅ Elemento de Slides encontrado: '{slides_element.text}'")
-                    print("🖱️ Clicando na aba Slides...")
+                    print(f"Elemento de Slides encontrado: '{slides_element.text}'")
+                    print("Clicando na aba Slides...")
                     
                     # Tenta clicar de diferentes formas
                     try:
@@ -200,26 +205,32 @@ class EdicaoSlidesTest(unittest.TestCase):
                     
                     # Verifica se mudou para a seção de slides
                     if self.verificar_secao_slides_ativa():
-                        print("✅ Navegação para Slides bem-sucedida!")
+                        print("Navegação para Slides bem-sucedida!")
+                        
+                        
+                        print("Rolando até o final da seção de slides...")
+                        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                        time.sleep(2) 
+                    
                         return
                     else:
-                        print("❌ Não conseguiu navegar para Slides, tentando próximo seletor...")
+                        print("Não conseguiu navegar para Slides, tentando próximo seletor...")
                         continue
                         
             except Exception as e:
-                print(f"❌ Seletor {selector} falhou: {e}")
+                print(f"Seletor {selector} falhou: {e}")
                 continue
         
-        # Se nenhum seletor funcionou, tenta uma estratégia mais agressiva
-        print("🔄 Tentando estratégia alternativa: buscar por texto 'Gerenciar Slides'...")
+        
+        print("Tentando estratégia alternativa: buscar por texto 'Gerenciar Slides'...")
         try:
             gerenciar_slides = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Gerenciar Slides')]")
-            print("✅ Encontrado 'Gerenciar Slides', provavelmente já está na seção correta")
+            print("Encontrado 'Gerenciar Slides', provavelmente já está na seção correta")
             return
         except:
             pass
         
-        print("❌ Não foi possível encontrar a aba Slides")
+        print("Não foi possível encontrar a aba Slides")
         raise Exception("Aba Slides não encontrada")
 
     def verificar_secao_slides_ativa(self):
@@ -230,14 +241,13 @@ class EdicaoSlidesTest(unittest.TestCase):
                 "//*[contains(text(), 'Gerenciar Slides')]",
                 "//*[contains(text(), 'Adicionar Novo Slide')]",
                 "//*[contains(text(), 'Slides Cadastrados')]",
-                "//*[contains(text(), 'funcionou')]"
             ]
             
             for indicador in indicadores:
                 try:
                     elemento = self.driver.find_element(By.XPATH, indicador)
                     if elemento.is_displayed():
-                        print(f"✅ Seção de Slides ativa - encontrado: {indicador}")
+                        print(f"Seção de Slides ativa - encontrado: {indicador}")
                         return True
                 except:
                     continue
@@ -246,58 +256,30 @@ class EdicaoSlidesTest(unittest.TestCase):
             return False
 
     def clicar_icone_edicao_slide(self):
-        """Encontra e clica no ícone de edição (lápis) do slide 'funcionou'"""
-        print("🔍 Procurando slide 'funcionou' e ícone de edição...")
+        """Encontra e clica no ícone de edição (lápis) do PRIMEIRO slide da lista"""
+        print("Procurando o ícone de edição do primeiro slide...")
         
         time.sleep(3)
         
         try:
-            # Encontra o elemento que contém "funcionou"
-            slide_element = self.wait.until(
-                EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'funcionou')]"))
+            # Localiza o primeiro botão de edição na lista de slides
+            icone_editar = self.wait.until(
+                EC.element_to_be_clickable((
+                    By.XPATH, 
+                    "(//*[contains(text(), 'Slides Cadastrados')]/following-sibling::div//button)[1]"
+                ))
             )
-            print("✅ Slide 'funcionou' encontrado!")
             
-            # Agora procura o ícone de edição (lápis) próximo a este elemento
-            icone_selectors = [
-                ".//ancestor::div[contains(@class, 'card')]//button",
-                ".//ancestor::div[1]//button",
-                ".//ancestor::div[2]//button", 
-                ".//ancestor::div[3]//button",
-                ".//following-sibling::div//button",
-                ".//preceding-sibling::div//button",
-                ".//..//button",
-                ".//..//..//button"
-            ]
+            print("Ícone de edição do primeiro slide encontrado!")
+            print("Clicando no ícone de edição...")
+            self.driver.execute_script("arguments[0].click();", icone_editar)
+            time.sleep(3)
             
-            for selector in icone_selectors:
-                try:
-                    icone_editar = slide_element.find_element(By.XPATH, selector)
-                    if icone_editar.is_displayed() and icone_editar.is_enabled():
-                        print(f"✅ Ícone de edição encontrado com seletor: {selector}")
-                        print("🖱️ Clicando no ícone de edição (lápis azul)...")
-                        self.driver.execute_script("arguments[0].click();", icone_editar)
-                        time.sleep(3)
-                        return
-                except:
-                    continue
-            
-            # Estratégia alternativa: procurar por todos os ícones/botões próximos
-            print("🔄 Tentando estratégia alternativa: buscar todos os botões próximos...")
-            botoes_proximos = slide_element.find_elements(By.XPATH, ".//ancestor::div//button")
-            for botao in botoes_proximos:
-                if botao.is_displayed() and botao.is_enabled():
-                    print("🖱️ Clicando em botão próximo ao slide 'funcionou'...")
-                    self.driver.execute_script("arguments[0].click();", botao)
-                    time.sleep(3)
-                    if self.verificar_modal_edicao_aberto():
-                        print("✅ Modal de edição aberto!")
-                        return
-            
-            raise Exception("Não foi possível encontrar e clicar no ícone de edição próximo a 'funcionou'")
-            
+            if not self.verificar_modal_edicao_aberto():
+                raise Exception("O modal de edição não abriu após o clique.")
+                
         except Exception as e:
-            print(f"❌ Erro ao encontrar slide 'funcionou': {e}")
+            print(f"Erro ao encontrar o primeiro ícone de edição: {e}")
             raise
 
     def verificar_modal_edicao_aberto(self):
@@ -307,25 +289,29 @@ class EdicaoSlidesTest(unittest.TestCase):
             modal_indicators = [
                 "//*[contains(text(), 'Editar Slide')]",
                 "//*[contains(text(), 'Edit Slide')]",
-                "//input[contains(@value, 'funcionou')]",
                 "//*[contains(@class, 'modal')]",
                 "//*[contains(@class, 'dialog')]"
             ]
             
             for indicator in modal_indicators:
                 try:
-                    elemento = self.driver.find_element(By.XPATH, indicator)
-                    if elemento.is_displayed():
-                        return True
+                    # Usar um wait curto para verificar se o elemento aparece
+                    WebDriverWait(self.driver, 2).until(
+                        EC.visibility_of_element_located((By.XPATH, indicator))
+                    )
+                    print(f"Modal de edição aberto (verificado por: {indicator})")
+                    return True
                 except:
                     continue
+            
+            print("Modal de edição não parece estar aberto.")
             return False
         except:
             return False
 
     def editar_titulo_slide(self):
-        """Edita o título do slide para 'IGREJA'"""
-        print("✏️ Editando título do slide para 'IGREJA'...")
+        """Edita o título do slide para 'Atualizado com sucesso'"""
+        print("Editando título do slide para 'Atualizado com sucesso'...")
         
         time.sleep(2)
         
@@ -333,68 +319,47 @@ class EdicaoSlidesTest(unittest.TestCase):
         titulo_selectors = [
             "//input[@placeholder*='Título']",
             "//input[@placeholder*='Title']",
-            "//input[contains(@value, 'funcionou')]",
             "//label[contains(., 'Título')]/following-sibling::input",
             "//label[contains(., 'Title')]/following-sibling::input",
-            "//*[contains(text(), 'Título do Slide')]/following::input[1]"
+            "//*[contains(text(), 'Título do Slide')]/following::input[1]",
+            "//input[@type='text']"
         ]
         
         campo_titulo = None
         
         for selector in titulo_selectors:
             try:
+                # Usamos find_element para pegar o primeiro que corresponder
                 campo_titulo = self.driver.find_element(By.XPATH, selector)
-                print(f"✅ Campo de título encontrado com seletor: {selector}")
-                
-                # Obtém o valor atual do campo
-                valor_atual = campo_titulo.get_attribute('value')
-                print(f"📝 Valor atual do título: '{valor_atual}'")
-                
-                break
+                if campo_titulo.is_displayed() and campo_titulo.is_enabled():
+                    print(f"Campo de título encontrado com seletor: {selector}")
+                    break # Encontrou um campo válido
+                else:
+                    campo_titulo = None # Continua procurando
             except:
                 continue
         
-        if not campo_titulo:
-            # Tenta encontrar qualquer input que possa ser o título
-            try:
-                inputs = self.driver.find_elements(By.TAG_NAME, "input")
-                for input_field in inputs:
-                    if input_field.is_displayed() and input_field.is_enabled():
-                        valor = input_field.get_attribute('value') or ''
-                        if 'funcionou' in valor.lower():
-                            campo_titulo = input_field
-                            print(f"✅ Campo de título encontrado por busca alternativa")
-                            break
-            except Exception as e:
-                print(f"❌ Erro na busca alternativa: {e}")
-        
         if campo_titulo:
-            # Limpa o campo e insere "IGREJA" - VERSÃO ROBUSTA
-            print("⌨️ Alterando título para 'IGREJA'...")
+            # Limpa o campo e insere o novo texto
+            print("Alterando título para 'Atualizado com sucesso'...")
             
-            # Método 1: Limpar com JavaScript
-            self.driver.execute_script("arguments[0].value = '';", campo_titulo)
-            time.sleep(0.5)
-            
-            # Método 2: Limpar normal
-            campo_titulo.clear()
-            time.sleep(0.5)
-            
-            # Método 3: Selecionar tudo e apagar
+            # Método robusto para limpar o campo
             campo_titulo.send_keys(Keys.CONTROL + "a")
             campo_titulo.send_keys(Keys.DELETE)
             time.sleep(0.5)
+            campo_titulo.clear() # Garantia extra
+            time.sleep(0.5)
             
             # Agora digita o novo texto
-            campo_titulo.send_keys("IGREJA")
-            print("✅ Título alterado para 'IGREJA'")
+            campo_titulo.send_keys("Atualizado com sucesso")
+            print("Título alterado para 'Atualizado com sucesso'")
         else:
-            print("❌ Não foi possível encontrar o campo de título")
+            print("Não foi possível encontrar o campo de título")
             raise Exception("Campo de título não encontrado no modal de edição")
 
     def salvar_alteracoes_slide(self):
         """Salva as alterações do slide"""
-        print("💾 Salvando alterações do slide...")
+        print("Salvando alterações do slide...")
         
         time.sleep(1)
         
@@ -411,53 +376,55 @@ class EdicaoSlidesTest(unittest.TestCase):
         for selector in salvar_selectors:
             try:
                 salvar_btn = self.driver.find_element(By.XPATH, selector)
-                print(f"✅ Botão de salvar encontrado: {salvar_btn.text}")
-                print("🖱️ Clicando para salvar alterações...")
+                print(f"Botão de salvar encontrado: {salvar_btn.text}")
+                print("Clicando para salvar alterações...")
                 salvar_btn.click()
                 time.sleep(3)
                 return
             except:
                 continue
         
-        print("❌ Botão de salvar não encontrado no modal")
+        print("Botão de salvar não encontrado no modal")
         raise Exception("Botão de salvar não encontrado")
 
     def verificar_edicao_slide(self):
-        """Verifica se a edição foi salva corretamente"""
-        print("🔍 Verificando se a edição foi salva...")
+        """Verifica se a edição para 'Atualizado com sucesso' foi salva"""
+        print("Verificando se a edição foi salva...")
         
         time.sleep(3)
         
-        # Procura pelo texto "IGREJA" na lista de slides
+        # Procura pelo texto "Atualizado com sucesso" na lista de slides
         try:
             slide_editado = self.wait.until(
-                EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'IGREJA')]"))
+                EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Atualizado com sucesso')]"))
             )
             texto_encontrado = slide_editado.text
-            print(f"✅ VERIFICAÇÃO CONCLUÍDA: Slide editado encontrado com texto: '{texto_encontrado}'")
+            print(f"VERIFICAÇÃO CONCLUÍDA: Slide editado encontrado com texto: '{texto_encontrado}'")
             
-            if "IGREJA" in texto_encontrado:
-                print("🎉 SUCESSO TOTAL! O slide foi editado corretamente para 'IGREJA'")
+            if "Atualizado com sucesso" in texto_encontrado:
+                print("SUCESSO TOTAL! O slide foi editado corretamente para 'Atualizado com sucesso'")
             else:
-                print(f"⚠️ Texto encontrado: '{texto_encontrado}' (diferente do esperado 'IGREJA')")
+                print(f"Texto encontrado: '{texto_encontrado}' (diferente do esperado)")
                 
         except Exception as e:
-            print(f"❌ O texto 'IGREJA' não foi encontrado na lista de slides: {e}")
+            print(f"O texto 'Atualizado com sucesso' não foi encontrado na lista de slides: {e}")
             
-            # Debug: mostra todos os textos na seção de slides
-            print("\n🔍 Textos encontrados na seção de slides:")
+            # Mostra os textos encontrados na seção em caso de falha
+            print("\nTextos encontrados na seção de slides:")
             try:
                 secoes = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Slides Cadastrados')]/following-sibling::*")
                 for secao in secoes[:5]:
                     if secao.text.strip():
-                        print(f"  - {secao.text.strip()}")
+                        print(f"  - {secao.text.strip()}")
             except:
                 pass
+            
+            raise Exception("Verificação falhou: Novo título 'Atualizado com sucesso' não encontrado.")
 
     def tearDown(self):
         """Limpeza após o teste"""
         if hasattr(self, 'driver') and self.driver:
-            # self.driver.quit()  # Descomente para fechar o browser
+            # self.driver.quit()  # Descomente para fechar o browser
             pass
 
 if __name__ == "__main__":
