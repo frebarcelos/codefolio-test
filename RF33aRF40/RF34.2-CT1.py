@@ -65,21 +65,23 @@ class AcessoCursosTest(unittest.TestCase):
             curso_link = self.wait.until(
                 EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
             )
+            time.sleep(2)
             curso_link.click()
 
             clica_no_curso = self.wait.until(
-                EC.element_to_be_clickable((By.XPATH, '//*[@id=":ri5:"]'))
+                EC.element_to_be_clickable((By.XPATH, '//*[@id=":rn8:"]'))
             )
+            time.sleep(2)
             clica_no_curso.click()
 
-            self.wait.until(EC.url_contains("/classes?courseId=-OcYY89WK7_dK26GmhzI"))
+            self.wait.until(EC.url_contains("/classes?courseId=-Odjt5BczXttGB0x9Pqi"))
         except Exception as e:
             self.fail(f"Falha ao acessar curso sem PIN: {e}")   
            
 
     def tearDown(self):
         if hasattr(self, 'driver') and self.driver:
-            # Garante que o navegador seja fechado após o teste
+            time.sleep(2)
             self.driver.quit() 
 
 if __name__ == "__main__":

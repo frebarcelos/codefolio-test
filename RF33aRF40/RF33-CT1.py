@@ -9,11 +9,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import json
 
-# Renomeado para refletir o novo foco do teste
 class AcessoCursosTest(unittest.TestCase):
 
     def setUp(self):
-        # Configurações gerais mantidas
+        
         self.TIMEOUT = 15
         self.URL_BASE = "https://testes.codefolio.com.br/"
         
@@ -51,43 +50,32 @@ class AcessoCursosTest(unittest.TestCase):
             print(f"Falha crítica ao injetar no Local Storage: {e}")
             self.driver.quit()
             raise RuntimeError("Falha no setup do Local Storage") from e
-
-        # 3. Recarrega a página (agora com o token injetado)
+        
         print("Recarregando a página...")
         self.driver.refresh()
     
-    # IMPORTANTE: Renomeado para começar com 'test_'
     def test_acessar_cursos_recomendados(self):
         """Testa o acesso à seção de Cursos Recomendados."""
         print("Acessando a seção de Cursos Recomendados...")
         
         try:
-            # Espera até que o elemento esteja visível e clicável (boa prática)
             curso_recomendado_link = self.wait.until(
                 EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
             )
+            time.sleep(2)
             curso_recomendado_link.click()
             print("Clicou no link de Cursos Recomendados.")
             
-            # --- ASSERÇÃO DE SUCESSO ---
-            # Aqui, você deve verificar que o conteúdo da página carregou corretamente.
-            # Exemplo: Verificar se a URL contém o caminho esperado ou se um título principal aparece.
             self.wait.until(EC.url_contains("/listcurso")) 
-            
-            # Placeholder de verificação do elemento após a navegação
-            self.wait.until(
-                EC.visibility_of_element_located((By.TAG_NAME, "div"))
-            )
+        
             print("Verificação: Título da nova página encontrado. Sucesso na navegação.")
-
-            self.assertTrue(True) # Substitua com uma asserção real, ex: self.assertTrue(curso_element.is_displayed())
             
         except Exception as e:
             self.fail(f"Falha ao acessar ou verificar Cursos Recomendados: {e}")
 
     def tearDown(self):
         if hasattr(self, 'driver') and self.driver:
-            # Garante que o navegador seja fechado após o teste
+            time.sleep(2)
             self.driver.quit() 
 
 if __name__ == "__main__":
