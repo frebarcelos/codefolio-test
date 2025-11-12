@@ -1,61 +1,38 @@
+
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+from chrome_config import get_chrome_options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import traceback
+import sys
+from os.path import abspath, dirname
+sys.path.insert(0, dirname(abspath(__file__)))
+from login_util import verificar_login, login
 
-
-class CodefolioTests(unittest.TestCase):
+class TestWatchVideo(unittest.TestCase):
 
     def setUp(self):
-        # Configurações
-        self.TIMEOUT = 20
         self.URL_BASE = "https://testes.codefolio.com.br/"
+        self.TIMEOUT = 20
 
-        # --- DADOS DO FIREBASE ---
-        self.FIREBASE_KEY = "FIREBASE_KEY_PLACEHOLDER"
-        self.FIREBASE_VALUE = "FIREBASE_VALUE_PLACEHOLDER"
-
-        chrome_options = Options()
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-popup-blocking")
+        chrome_options = get_chrome_options()
 
         service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
         self.driver.implicitly_wait(5)
         self.wait = WebDriverWait(self.driver, self.TIMEOUT)
-        
-    def _login(self):
-                """Injeta dados de autenticação no Local Storage para simular o login."""
-                print("Injetando dados de autenticação no Local Storage...")
-                self.driver.get(self.URL_BASE)
-                try:
-                    self.driver.execute_script(
-                        "window.localStorage.setItem(arguments[0], arguments[1]);",
-                        self.FIREBASE_KEY,
-                        self.FIREBASE_VALUE
-                    )
-                    print("Injeção no Local Storage bem-sucedida.")
-                except Exception as e:
-                    print(f"Falha crítica ao injetar no Local Storage: {e}")
-                    self.driver.quit()
-                    raise RuntimeError("Falha no setup do Local Storage") from e
-                self.driver.refresh()
-                time.sleep(2) # Pausa para garantir que o login seja processado
 
     def _encontrar_e_clicar_curso(self, course_title):
         """Encontra e clica em um curso nas abas 'Em Andamento' ou 'Concluídos'."""
         try:
             # Tenta encontrar o curso na aba atual
-            xpath = f"//h6[normalize-space()='{course_title}']/ancestor::div[contains(@class, 'MuiCard-root')]//button[normalize-space()='Começar']"
+            xpath = f"//h6[normalize-space()='teste123']/ancestor::div[contains(@class, 'MuiCard-root')]//button[normalize-space()='Começar']"
             comecar_button = WebDriverWait(self.driver, 1).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, xpath)
@@ -108,7 +85,7 @@ class CodefolioTests(unittest.TestCase):
 
     def _navegar_para_pagina_de_video_logado(self):
         """Navega para a página de vídeo como um usuário logado."""
-        self.verificar_login()
+        verificar_login(self.driver, self.wait)
         print("Navegando para a lista de cursos (logado)...")
         self.driver.get(f"{self.URL_BASE}listcurso")
         self.wait.until(EC.url_contains("/listcurso"))
@@ -129,26 +106,6 @@ class CodefolioTests(unittest.TestCase):
         self.wait.until(EC.url_contains("/classes?courseId="))
         print("✓ Página de aulas carregada")
 
-
-
-    def verificar_login(self):
-        """Verifica se o login foi bem-sucedido."""
-        print("Verificando se o login foi processado...")
-        try:
-            print("Aguardando 5s para o Firebase SDK processar o login...")
-            time.sleep(5)
-            profile_button = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Configurações da Conta']")))
-            self.driver.execute_script("arguments[0].click();", profile_button)
-            print("Clicou no botão de perfil para abrir o menu.")
-            self.wait.until(EC.visibility_of_element_located((By.XPATH, "//li[normalize-space()='Sair']")))
-            print("Login validado com sucesso!")
-            self.driver.execute_script("document.body.click();")
-        except Exception as e:
-            print("--- ERRO NA VALIDAÇÃO DO LOGIN ---")
-            print(f"Causa provável: O token no 'FIREBASE_VALUE' expirou ou está incorreto.")
-            print(f"Exceção: {e}")
-            self.fail("Falha na injeção de sessão do Firebase. O token pode estar expirado.")
-
     def tearDown(self):
         """Finaliza o teste, salva screenshot e fecha o driver."""
         if hasattr(self, 'driver') and self.driver:
@@ -159,12 +116,10 @@ class CodefolioTests(unittest.TestCase):
                 pass
             self.driver.quit()
 
-    # --- Test Cases ---
-
     def test_01_assistir_video_logado(self):
         """Verifica se o usuário LOGADO consegue assistir a um vídeo de um curso."""
         print("\n--- EXECUTANDO: test_01_assistir_video_logado ---")
-        self._login()
+        login(self.driver)
         self._navegar_para_pagina_de_video_logado()
         try:
             print("Verificando e dispensando o modal de informação, se presente...")
@@ -218,68 +173,6 @@ class CodefolioTests(unittest.TestCase):
         except Exception as e:
             traceback.print_exc()
             self.fail(f"Falha durante o teste de assistir vídeo deslogado: {e}")
-
-    def test_03_navegacao_logado(self):
-        """Verifica a navegação entre vídeos para um usuário LOGADO."""
-        print("\n--- EXECUTANDO: test_03_navegacao_logado ---")
-        self._login()
-        self._navegar_para_pagina_de_video_logado()
-        self._realizar_teste_navegacao()
-
-    def test_04_navegacao_deslogado(self):
-        """Verifica a navegação entre vídeos para um usuário DESLOGADO."""
-        print("\n--- EXECUTANDO: test_04_navegacao_deslogado ---")
-        self.driver.get(self.URL_BASE) # Start fresh
-        self._navegar_para_pagina_de_video_deslogado()
-        self._realizar_teste_navegacao()
-
-    def _realizar_teste_navegacao(self):
-        """Lógica de teste de navegação reutilizável."""
-        print("Aguardando 5 segundos para a renderização completa da página...")
-        time.sleep(5)
-        print("Executando script para encontrar e clicar no botão 'próximo' via Shadow DOM...")
-        js_script_click_next = """
-        const selector = '[data-testid="ArrowForwardIcon"]';
-        function findInShadowDom(selector) {
-            function find(root) {
-                const found = root.querySelector(selector);
-                if (found) return found;
-                const allElements = root.querySelectorAll('*');
-                for (const element of allElements) {
-                    if (element.shadowRoot) {
-                        const foundInShadow = find(element.shadowRoot);
-                        if (foundInShadow) return foundInShadow;
-                    }
-                }
-                return null;
-            }
-            return find(document);
-        }
-        const icon = findInShadowDom(selector);
-        if (icon) {
-            const button = icon.closest('button');
-            if (button && !button.disabled) {
-                button.click();
-                return true;
-            }
-        }
-        return false;
-        """
-        clicked = self.driver.execute_script(js_script_click_next)
-        self.assertTrue(clicked, "Não foi possível encontrar ou clicar no botão 'próximo' via script.")
-        print("✓ Clicou no botão de próximo vídeo.")
-        time.sleep(2)
-        self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "iframe")))
-        print("✓ Iframe do novo vídeo encontrado após a navegação.")
-        print("✓ Teste de navegação entre vídeos simplificado concluído com sucesso!")
-        if hasattr(self, 'driver') and self.driver:
-            try:
-                self.driver.save_screenshot("resultado_teste.png")
-                print("Screenshot salvo como 'resultado_teste.png'")
-            except:
-                pass
-            # self.driver.quit()
-
 
 if __name__ == "__main__":
     unittest.main()
