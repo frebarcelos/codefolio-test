@@ -28,7 +28,6 @@ class EdicaoSlidesTest(unittest.TestCase):
         self.FIREBASE_KEY = "firebase:authUser:AIzaSyARn2qVrSSndFu9JSo5mexrQCMxmORZzCg:[DEFAULT]"
         self.FIREBASE_VALUE = """{"apiKey":"AIzaSyARn2qVrSSndFu9JSo5mexrQCMxmORZzCg","appName":"[DEFAULT]","createdAt":"1760400677093","displayName":"Bernardo Gomes Dorneles","email":"bernardodorneles.aluno@unipampa.edu.br","emailVerified":true,"isAnonymous":false,"lastLoginAt":"1762623423706","phoneNumber":null,"photoURL":"https://lh3.googleusercontent.com/a/ACg8ocLO0jBvdkLbUox-pQeUPodOBF-co7iSXE_KehosP3OcjblGPRQ=s96-c","providerData":[{"displayName":"Bernardo Gomes Dorneles","email":"bernardodorneles.aluno@unipampa.edu.br","phoneNumber":null,"photoURL":"https://lh3.googleusercontent.com/a/ACg8ocLO0jBvdkLbUox-pQeUPodOBF-co7iSXE_KehosP3OcjblGPRQ=s96-c","providerId":"google.com","uid":"105856292510209699123"}],"stsTokenManager":{"accessToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0NTEzMjA5OWFkNmJmNjEzODJiNmI0Y2RlOWEyZGZlZDhjYjMwZjAiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQmVybmFyZG8gR29tZXMgRG9ybmVsZXMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jTE8wakJ2ZGtMYlVveC1wUWVVUG9kT0JGLWNvN2lTWEVfS2Vob3NQM09jamJsR1BSUT1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9yZWFjdC1uYS1wcmF0aWNhIiwiYXVkIjoicmVhY3QtbmEtcHJhdGljYSIsImF1dGhfdGltZSI6MTc2MjYyMzUwMSwidXNlcl9pZCI6Ik92S09rWUNLMmVUN3huM1FjUVRZblpTYjFSMzMiLCJzdWIiOiJPdktPa1lDSzJlVDd4bjNRY1FUWW5aU2IxUjMzIiwiaWF0IjoxNzYyNjczOTkwLCJleHAiOjE3NjI2Nzc1OTAsImVtYWlsIjoiYmVybmFyZG9kb3JuZWxlcy5hbHVub0B1bmlwYW1wYS5lZHUuYnIiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjEwNTg1NjI5MjUxMDIwOTY5OTEyMyJdLCJlbWFpbCI6WyJiZXJuYXJkb2Rvcm5lbGVzLmFsdW5vQHVuaXBhbXBhLmVkdS5iciJdfSwic2lnbl9pbl9wcm9jSmlkZXIiOiJnb29nbGUuY29tIn19.a-W_CUqU0ZP81ZpURu49b6cBrClWk0nqcraFGw47ktTuK3mqtIovg_dqmbZ7s5GghCdk6_twFA6ihdPuFbyLpCX8PZLAIcyQFQBeVQ11ql3oCDeGiQogXKw-sM5TIIix4gTgsS7IXhr6uNbkFCysLUSuA8H-bp10VsiU7R8fHz0BQTj0qExL6SCqCw05F76HXBuzxwyknYj1FeX53jGFdOmAhbHl9eHAhSkl7pBmkLBFkHqW9FXW1ttDGtg4Vh9UD_Inb432gglN-ZBPHy2ukSSrTOex430IDjJTdfZOhRe-jhscMnfLYWRS-9B1Y-dF7r-SJcW1_PTdCVuhYOhh0A","expirationTime":1762677590230,"refreshToken":"AMf-vBzmGoli8pLckXIHEHFjBsq9tdclxZJyoH1JbcdFrcPLRxGaM1rX9B8XHnnJ_XN05JfnkqyH5bYKdBmFud2NNZehSZM4mSXlBQU5HTmmV4vCyBk6T76D7ne-jyrdpzFvhApdJyMx-vyjhqUzyv2uMVdTxfj-pb6kZXAGW_a9tW7q0OA9CJ_KF1eGqx3DcSemtemLSxyxNo0A3gXeMMADVdpIgH8KmQbcFVfqEgr2Lh4C11_njx-Myfov2byzlZpc1zCivD1xCX5LLoEOgcCWMCp8_BEeHtwLeFGRS4DDxxpPH2-WcGpLJINOxCbUFQYeCfVT0bzzGjPgBKA28TQTmv7T0x8uCVBTUHNoVwpmpt9zFqO4QncobWpTnVT4ns7eQyRlBBNdTjSc9133whnn9bT3Wzfar0U2zh9VgFzjftgpgSx3UCNzJkCTvmicr38knaKKfpxGP6dDdqG4Ohjf_Ji9mPxzQw"},"tenantId":null,"uid":"OvKOkYCK2eT7xn3QcQTYnZSb1R33","_redirectEventId":null}"""
         
-        
         self.configurar_autenticacao()
 
     def configurar_autenticacao(self):
@@ -51,7 +50,6 @@ class EdicaoSlidesTest(unittest.TestCase):
         self.driver.refresh()
         time.sleep(3)
 
-    
     def test_edicao_slides_rf9(self):
         """CT-01 - Edição de Slides (RF09)"""
         print("\n=== INICIANDO CT-01 - EDIÇÃO DE SLIDES ===")
@@ -159,7 +157,7 @@ class EdicaoSlidesTest(unittest.TestCase):
                 try:
                     texto = aba.text.strip()
                     if texto:
-                        print(f"  {i+1}. '{texto}' - clicável: {aba.is_enabled()}")
+                        print(f"  {i+1}. '{texto}' - clicável: {aba.is_enabled()}")
                 except:
                     pass
         except Exception as e:
@@ -206,7 +204,7 @@ class EdicaoSlidesTest(unittest.TestCase):
                         
                         # Print evidencia 01
                         print("Tirando screenshot - 1. Antes da Edição")
-                        self.driver.save_screenshot("Bernardo-Dorneles/img/evidencia_01_antes_edicao.png")
+                        self.driver.save_screenshot("Bernardo-Dorneles/img/RF09-CT-01/evidencia_01_antes_edicao.png")
                         
                         return
                     else:
@@ -301,8 +299,8 @@ class EdicaoSlidesTest(unittest.TestCase):
             return False
 
     def editar_titulo_slide(self):
-        """Edita o título do slide para 'Atualizado com sucesso'"""
-        print("Editando título do slide para 'Atualizado com sucesso'...")
+        """Edita o título do slide para 'Slides Trabalho de SO'"""
+        print("Editando título do slide para 'Slides Trabalho de SO'...")
         
         time.sleep(2)
         
@@ -329,7 +327,7 @@ class EdicaoSlidesTest(unittest.TestCase):
                 continue
         
         if campo_titulo:
-            print("Alterando título para 'Atualizado com sucesso'...")
+            print("Alterando título para 'Slides Trabalho de SO'...")
             
             campo_titulo.send_keys(Keys.CONTROL + "a")
             campo_titulo.send_keys(Keys.DELETE)
@@ -337,13 +335,13 @@ class EdicaoSlidesTest(unittest.TestCase):
             campo_titulo.clear() 
             time.sleep(0.5)
             
-            campo_titulo.send_keys("Atualizado com sucesso")
-            print("Título alterado para 'Atualizado com sucesso'")
+            campo_titulo.send_keys("Slides Trabalho de SO")
+            print("Título alterado para 'Slides Trabalho de SO'")
             
             # Print evidencia 02
             time.sleep(1) 
             print("Tirando screenshot - 2. Durante a Edição (Modal)")
-            self.driver.save_screenshot("Bernardo-Dorneles/img/evidencia_02_durante_edicao.png")
+            self.driver.save_screenshot("Bernardo-Dorneles/img/RF09-CT-01/evidencia_02_durante_edicao.png")
             
         else:
             print("Não foi possível encontrar o campo de título")
@@ -396,40 +394,34 @@ class EdicaoSlidesTest(unittest.TestCase):
             pass
 
     def verificar_edicao_slide(self):
-        """Verifica se a edição para 'Atualizado com sucesso' foi salva"""
+        """Verifica se a edição para 'Slides Trabalho de SO' foi salva"""
         print("Verificando se a edição foi salva...")
         
         time.sleep(3)
         
         try:
+            # Procura pelo texto na página
             slide_editado = self.wait.until(
-                EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Atualizado com sucesso')]"))
+                EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Slides Trabalho de SO')]"))
             )
             texto_encontrado = slide_editado.text
             print(f"VERIFICAÇÃO CONCLUÍDA: Slide editado encontrado com texto: '{texto_encontrado}'")
             
             # Print evidencia 03
             print("Tirando screenshot - 3. Depois da Edição (Resultado)")
-            self.driver.save_screenshot("Bernardo-Dorneles/img/evidencia_03_depois_edicao.png")
+            self.driver.save_screenshot("Bernardo-Dorneles/img/RF09-CT-01/evidencia_03_depois_edicao.png")
+        
+            self.assertIn("Slides Trabalho de SO", texto_encontrado, 
+                          f"FALHA NO ASSERT: O texto esperado 'Slides Trabalho de SO' não foi encontrado. Texto obtido: '{texto_encontrado}'")
             
-            if "Atualizado com sucesso" in texto_encontrado:
-                print("SUCESSO TOTAL! O slide foi editado corretamente para 'Atualizado com sucesso'")
-            else:
-                print(f"Texto encontrado: '{texto_encontrado}' (diferente do esperado)")
+            print("ASSERT OK: Edição validada com sucesso!")
                 
         except Exception as e:
-            print(f"O texto 'Atualizado com sucesso' não foi encontrado na lista de slides: {e}")
+            print(f"O texto 'Slides Trabalho de SO' não foi encontrado na lista de slides: {e}")
             
-            print("\nTextos encontrados na seção de slides:")
-            try:
-                secoes = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Slides Cadastrados')]/following-sibling::*")
-                for secao in secoes[:5]:
-                    if secao.text.strip():
-                        print(f"  - {secao.text.strip()}")
-            except:
-                pass
+            self.driver.save_screenshot("Bernardo-Dorneles/img/RF09-CT-01/erro_verificacao_assert.png")
             
-            raise Exception("Verificação falhou: Novo título 'Atualizado com sucesso' não encontrado.")
+            raise Exception("Verificação falhou: Novo título 'Slides Trabalho de SO' não encontrado.")
 
     def tearDown(self):
         """Limpeza após o teste"""
