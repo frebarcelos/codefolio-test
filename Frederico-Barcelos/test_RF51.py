@@ -1,12 +1,12 @@
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from chrome_config import get_chrome_options
 from webdriver_manager.chrome import ChromeDriverManager
-import time
 import traceback
 import sys
 from os.path import abspath, dirname
@@ -14,6 +14,7 @@ from os.path import abspath, dirname
 # Adiciona o diretório pai ao path para conseguir importar os utils
 sys.path.insert(0, dirname(abspath(__file__)))
 from login_util import login, verificar_login
+from screenshot_util import take_step_screenshot, reset_screenshot_counter
 
 class TestExtraMaterials(unittest.TestCase):
 
@@ -25,12 +26,13 @@ class TestExtraMaterials(unittest.TestCase):
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
         self.driver.implicitly_wait(5)
         self.wait = WebDriverWait(self.driver, self.TIMEOUT)
+        reset_screenshot_counter(self.id())
 
     def _encontrar_e_clicar_curso(self, course_title):
         """Encontra e clica em um curso nas abas 'Em Andamento' ou 'Concluídos'."""
         try:
             # Tenta encontrar o curso na aba atual
-            xpath = f"//h6[normalize-space()='teste123']/ancestor::div[contains(@class, 'MuiCard-root')]//button[normalize-space()='Começar']"
+            xpath = f"//h6[normalize-space()='{course_title}']/ancestor::div[contains(@class, 'MuiCard-root')]//button[normalize-space()='Começar']"
             comecar_button = WebDriverWait(self.driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, xpath))
             )
@@ -68,21 +70,31 @@ class TestExtraMaterials(unittest.TestCase):
             )
             self.driver.execute_script("arguments[0].click();", comecar_button)
             return
-        except:
-            self.fail(f"Curso '{course_title}' não encontrado em nenhuma das abas.")
+        except TimeoutException:
+            self.fail(f"FALHA: Tempo esgotado. O curso '{course_title}' não foi encontrado em nenhuma das abas (Inicial, Em Andamento, Concluídos).")
+        except Exception as e:
+            self.fail(f"FALHA: Ocorreu um erro inesperado ao procurar o curso '{course_title}': {e}")
 
     def _navegar_para_pagina_de_video_logado(self):
         """Navega para a página de vídeo como um usuário logado."""
         verificar_login(self.driver, self.wait)
         print("Navegando para a lista de cursos (logado)...")
         self.driver.get(f"{self.URL_BASE}listcurso")
-        self.wait.until(EC.url_contains("/listcurso"))
+        try:
+            self.wait.until(EC.url_contains("/listcurso"))
+        except TimeoutException:
+            self.fail("FALHA: Tempo esgotado ao esperar pela página de lista de cursos (URL não contém '/listcurso').")
+        take_step_screenshot(self.driver, self.id(), "pagina_lista_cursos")
         print("✓ Página de lista de cursos carregada")
         print("Clicando em um botão 'começar' para o curso específico...")
         course_title = "Curso Teste - Frederico Barcelos"
         self._encontrar_e_clicar_curso(course_title)
         print("Verificando se estamos na página de aulas...")
-        self.wait.until(EC.url_contains("/classes?courseId="))
+        try:
+            self.wait.until(EC.url_contains("/classes?courseId="))
+        except TimeoutException:
+            self.fail("FALHA: Tempo esgotado ao esperar pela página de aulas do curso (URL não contém '/classes?courseId=').")
+        take_step_screenshot(self.driver, self.id(), "pagina_aulas_curso")
         print("✓ Página de aulas carregada")
 
     def _navegar_para_pagina_de_video_deslogado(self):
@@ -91,17 +103,16 @@ class TestExtraMaterials(unittest.TestCase):
         public_course_url = f"{self.URL_BASE}classes?courseId=-OdiThGNeYgeZtQJbz1a"
         self.driver.get(public_course_url)
         print("Verificando se estamos na página de aulas...")
-        self.wait.until(EC.url_contains("/classes?courseId="))
+        try:
+            self.wait.until(EC.url_contains("/classes?courseId="))
+        except TimeoutException:
+            self.fail("FALHA: Tempo esgotado ao esperar pela página de aulas do curso (URL não contém '/classes?courseId=').")
+        take_step_screenshot(self.driver, self.id(), "pagina_aulas_deslogado")
         print("✓ Página de aulas carregada")
 
     def tearDown(self):
         """Finaliza o teste, salva screenshot e fecha o driver."""
         if hasattr(self, 'driver') and self.driver:
-            try:
-                self.driver.save_screenshot(f"resultado_{self.id()}.png")
-                print(f"Screenshot salvo como 'resultado_{self.id()}.png'")
-            except:
-                pass
             self.driver.quit()
 
     def _verificar_aba_material_extra(self):
@@ -115,7 +126,7 @@ class TestExtraMaterials(unittest.TestCase):
                     (By.XPATH, "//button[normalize-space()='Materiais Extras']")
                 )
             )
-            materiais_tab.click()
+            self.driver.execute_script("arguments[0].click();", materiais_tab)
             print("✓ Aba 'Materiais Extras' clicada.")
 
             print("Verificando se o conteúdo do material extra foi carregado...")
@@ -125,16 +136,20 @@ class TestExtraMaterials(unittest.TestCase):
                 )
             )
             self.assertTrue(material_extra_header.is_displayed(), "O cabeçalho do material extra não está visível.")
+            take_step_screenshot(self.driver, self.id(), "conteudo_material_extra_visivel")
             print("✓ Conteúdo do material extra verificado com sucesso.")
 
+        except TimeoutException as e:
+            self.fail(f"FALHA: Tempo esgotado ao tentar verificar a aba de materiais extras. Detalhe: {e}")
         except Exception as e:
             traceback.print_exc()
-            self.fail(f"Falha ao verificar a aba de materiais extras: {e}")
+            self.fail(f"FALHA: Ocorreu um erro inesperado ao verificar a aba de materiais extras: {e}")
 
     def test_01_ver_material_extra_logado(self):
         """Verifica se o usuário LOGADO consegue ver os materiais extras."""
         print("\n--- EXECUTANDO: test_01_ver_material_extra_logado ---")
         login(self.driver)
+        take_step_screenshot(self.driver, self.id(), "apos_login")
         self._navegar_para_pagina_de_video_logado()
         self._verificar_aba_material_extra()
 
@@ -153,7 +168,7 @@ class TestExtraMaterials(unittest.TestCase):
                     (By.XPATH, "//button[normalize-space()='Materiais Extras']")
                 )
             )
-            materiais_tab.click()
+            self.driver.execute_script("arguments[0].click();", materiais_tab)
             print("✓ Aba 'Materiais Extras' clicada.")
 
             print("Verificando se a mensagem 'Você deve fazer login...' é exibida...")
@@ -163,11 +178,14 @@ class TestExtraMaterials(unittest.TestCase):
                 )
             )
             self.assertTrue(login_message.is_displayed(), "A mensagem para fazer login não foi encontrada para o usuário deslogado.")
+            take_step_screenshot(self.driver, self.id(), "mensagem_login_visivel")
             print("✓ Mensagem para fazer login verificada com sucesso.")
 
+        except TimeoutException as e:
+            self.fail(f"FALHA: Tempo esgotado ao verificar a aba de materiais extras para usuário deslogado. Detalhe: {e}")
         except Exception as e:
             traceback.print_exc()
-            self.fail(f"Falha ao verificar a mensagem de login para materiais extras: {e}")
+            self.fail(f"FALHA: Ocorreu um erro inesperado ao verificar a mensagem de login para materiais extras: {e}")
 
 if __name__ == "__main__":
     unittest.main()
