@@ -1,4 +1,3 @@
-# test_rf20_filtros.py
 import unittest 
 import time
 from selenium import webdriver
@@ -43,7 +42,6 @@ class TestRF20FiltroAlunos(unittest.TestCase):
         try:
             seletor_perfil = (By.CSS_SELECTOR, "button[aria-label='Configurações da Conta']")
             profile_button = self.wait.until(EC.presence_of_element_located(seletor_perfil))
-            print("Botão de perfil encontrado. Clicando...")
             self.driver.execute_script("arguments[0].click();", profile_button)
             self.wait.until(EC.visibility_of_element_located(
                 (By.XPATH, "//li[normalize-space()='Sair']")
@@ -112,9 +110,7 @@ class TestRF20FiltroAlunos(unittest.TestCase):
             print("Aluno [gabrielortiz.aluno] desapareceu com sucesso.")
 
             
-            print("Limpando o filtro ...")
             campo_busca.click() 
-            # Simula Ctrl+A 
             campo_busca.send_keys(Keys.CONTROL, 'a')
             time.sleep(0.5) 
             campo_busca.send_keys(Keys.BACKSPACE)
@@ -188,7 +184,7 @@ class TestRF20FiltroAlunos(unittest.TestCase):
                     time.sleep(0.5) 
 
             if not aluno_reapareceu:
-                self.fail("Falha ao encontrar o aluno (0%) após aplicar o filtro 'Iniciante'.")
+                self.fail("Falha ao encontrar o aluno após aplicar o filtro 'Iniciante'.")
             
         
             dropdown_progresso.click()
