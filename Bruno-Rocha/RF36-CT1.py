@@ -9,11 +9,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import json
 
-# Renomeado para refletir o novo foco do teste
 class AcessoCursosTest(unittest.TestCase):
 
     def setUp(self):
-        # Configurações gerais mantidas
+        
         self.TIMEOUT = 15
         self.URL_BASE = "https://testes.codefolio.com.br/"
         
@@ -51,44 +50,69 @@ class AcessoCursosTest(unittest.TestCase):
             print(f"Falha crítica ao injetar no Local Storage: {e}")
             self.driver.quit()
             raise RuntimeError("Falha no setup do Local Storage") from e
-
-        # 3. Recarrega a página (agora com o token injetado)
+        
         print("Recarregando a página...")
         self.driver.refresh()
     
-    # IMPORTANTE: Renomeado para começar com 'test_'
-    def test_acessar_curso_com_PIN(self):
-        """Testa o acesso a curso utilizando um PIN."""
-        print("Acessando curso com PIN...")
-
-        try:   
+    def test_visuallizacao_de_ranking_no_quiz(self):
+        """Testa o acesso à resultados do Quiz."""
+        print("Acessando o ranking do Quiz...")
+        
+        XPATH_BOTAO_VER_CURSO = "//h6[normalize-space(text())='Curso Grupo 4 sem PIN']/ancestor::div[contains(@class, 'MuiCard-root')]//button[text()='Ver Curso']"
+        XPATH_QUIZ_GIGI = "//button[@title='Abrir Quiz Gigi']"
+        XPATH_BOTAO_PERGUNTA_PERSONALIZADA = "//button[@aria-label='Pergunta Personalizada']"
+        XPATH_BOTAO_NORMAL = "//button[@aria-label='Voltar ao modo normal']"
+        XPATH_BOTAO_FECHAR = "//button[text()='Fechar']"
+        
+        try: 
             curso_link = self.wait.until(
                 EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
             )
-            time.sleep(2)
             curso_link.click()
-
-            clica_no_curso = self.wait.until(
-                EC.element_to_be_clickable((By.XPATH, '//*[@id=":rj9:"]'))
+            
+            cursos_concluidos = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[3]/div[1]/div/div/button[3]'))
             )
-            time.sleep(2)
-            clica_no_curso.click()
-
-            digita_o_PIN = self.wait.until(
-                EC.element_to_be_clickable((By.XPATH, '//*[@id=":rjb:"]'))
+            cursos_concluidos.click()
+            
+            botao_ver_curso = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_VER_CURSO))
             )
+            botao_ver_curso.click()
+            
+            botao_fechar = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_FECHAR))
+            )
+            botao_fechar.click()
             time.sleep(2)
-            digita_o_PIN.send_keys("123456")
-
-            self.wait.until(EC.url_contains("/classes?courseId=-OdjqbYSSr9VQgAaSVki"))
+            
+            botao_quiz_gigi = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_QUIZ_GIGI))
+            )
+            botao_quiz_gigi.click()  
+            time.sleep(2)
+            
+            botao_pergunta_personalizada = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_PERGUNTA_PERSONALIZADA))
+            )
+            botao_pergunta_personalizada.click()  
+            time.sleep(5)
+            
+            botao_voltar_normal = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_NORMAL))
+            )   
+            botao_voltar_normal.click() 
+            time.sleep(2)
+            
+            self.wait.until(EC.url_contains("/classes"))
+            
         except Exception as e:
-            self.fail(f"Falha ao acessar curso com PIN: {e}")   
-           
-
+            self.fail(f"Falha ao testar o RF36 - Retorno ao Modo Normal: {e}")
+        print("Teste do RF36 - Retorno ao Modo Normal, concluído com sucesso.")
+    
     def tearDown(self):
         if hasattr(self, 'driver') and self.driver:
-            # Garante que o navegador seja fechado após o teste
-            time.sleep(2)
+            time.sleep(10)
             self.driver.quit() 
 
 if __name__ == "__main__":

@@ -54,28 +54,57 @@ class AcessoCursosTest(unittest.TestCase):
         print("Recarregando a página...")
         self.driver.refresh()
     
-    def test_acessar_cursos_recomendados(self):
-        """Testa o acesso à seção de Cursos Recomendados."""
-        print("Acessando a seção de Cursos Recomendados...")
+    def test_visuallizacao_de_ranking_no_quiz(self):
+        """Testa o acesso à resultados do Quiz."""
+        print("Acessando o ranking do Quiz...")
         
-        try:
-            curso_recomendado_link = self.wait.until(
+        XPATH_BOTAO_VER_CURSO = "//h6[normalize-space(text())='Curso Grupo 4 sem PIN']/ancestor::div[contains(@class, 'MuiCard-root')]//button[text()='Ver Curso']"
+        XPATH_RESULTADO_ALUNO = "//button[@title='Ver resultados dos estudantes']"
+        XPATH_OPCAO_1 = "//label[.//div[text()='Opção 1']]"
+        XPATH_OPCAO_2 = "//label[.//div[text()='Opção 2']]"
+        XPATH_BOTAO_PROXIMA = "//button[text()='Próxima']"
+        XPATH_BOTAO_FINALIZAR = "//button[text()='Finalizar']"
+        XPATH_BOTAO_FECHAR = "//button[text()='Fechar']"
+        try: 
+            curso_link = self.wait.until(
                 EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
             )
-            time.sleep(2)
-            curso_recomendado_link.click()
-            print("Clicou no link de Cursos Recomendados.")
+            curso_link.click()
             
-            self.wait.until(EC.url_contains("/listcurso")) 
-        
-            print("Verificação: Título da nova página encontrado. Sucesso na navegação.")
+            cursos_concluidos = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[3]/div[1]/div/div/button[3]'))
+            )
+            cursos_concluidos.click()
+            
+            botao_comecar_curso = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_VER_CURSO))
+            )
+            botao_comecar_curso.click()
+            
+            botao_fechar = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_FECHAR))
+            )
+            botao_fechar.click()
+            time.sleep(2)
+            
+            botao_resultados_aluno = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, XPATH_RESULTADO_ALUNO))
+            )
+            botao_resultados_aluno.click()  
+            time.sleep(2)
+            
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")   
+            time.sleep(2)
+
+            self.wait.until(EC.url_contains("/studentDashboard"))
             
         except Exception as e:
-            self.fail(f"Falha ao acessar ou verificar Cursos Recomendados: {e}")
-
+            self.fail(f"Falha ao acessar os resultados do quiz: {e}")
+        print("Teste de acesso aos resultados do Quiz concluído com sucesso.")
+    
     def tearDown(self):
         if hasattr(self, 'driver') and self.driver:
-            time.sleep(2)
+            time.sleep(10)
             self.driver.quit() 
 
 if __name__ == "__main__":
