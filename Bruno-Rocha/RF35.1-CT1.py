@@ -60,10 +60,6 @@ class AcessoCursosTest(unittest.TestCase):
         
         XPATH_BOTAO_VER_CURSO = "//h6[normalize-space(text())='Curso Grupo 4 sem PIN']/ancestor::div[contains(@class, 'MuiCard-root')]//button[text()='Ver Curso']"
         XPATH_RESULTADO_ALUNO = "//button[@title='Ver resultados dos estudantes']"
-        XPATH_OPCAO_1 = "//label[.//div[text()='Opção 1']]"
-        XPATH_OPCAO_2 = "//label[.//div[text()='Opção 2']]"
-        XPATH_BOTAO_PROXIMA = "//button[text()='Próxima']"
-        XPATH_BOTAO_FINALIZAR = "//button[text()='Finalizar']"
         XPATH_BOTAO_FECHAR = "//button[text()='Fechar']"
         try: 
             curso_link = self.wait.until(
