@@ -26,7 +26,6 @@ class CadastroMaterialExtraTest(unittest.TestCase):
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         self.wait = WebDriverWait(self.driver, 15)
         
-        # Configura a pasta para RF11-CT01
         self.EVIDENCE_DIR = "Bernardo-Dorneles/img/RF11-CT01/"
         os.makedirs(self.EVIDENCE_DIR, exist_ok=True)
         
@@ -55,7 +54,6 @@ class CadastroMaterialExtraTest(unittest.TestCase):
             
             self.navegar_para_aba_materiais()
             
-            # Preenche diretamente os campos e clica no botão
             self.preencher_e_adicionar_material()
             
             self.fechar_modal_sucesso()
@@ -112,14 +110,13 @@ class CadastroMaterialExtraTest(unittest.TestCase):
 
     def preencher_e_adicionar_material(self):
         print("Preenchendo formulário...")
-        time.sleep(2) # Espera os campos carregarem
+        time.sleep(2) 
         
         print("Evidência 1: Formulário Vazio")
         self.driver.save_screenshot(f"{self.EVIDENCE_DIR}evidencia_01_antes_preencher.png")
         
         try:
-            # --- ESTRATÉGIA ROBUSTA PARA ENCONTRAR OS CAMPOS ---
-            # Tenta encontrar 'Nome do Material' por placeholder OU por label
+
             campo_nome = self.wait.until(EC.visibility_of_element_located((
                 By.XPATH, "//input[@placeholder='Nome do Material'] | //label[contains(., 'Nome do Material')]/following-sibling::div//input"
             )))
@@ -134,13 +131,12 @@ class CadastroMaterialExtraTest(unittest.TestCase):
             time.sleep(1)
             print("Evidência 2: Formulário Preenchido")
             self.driver.save_screenshot(f"{self.EVIDENCE_DIR}evidencia_02_preenchido.png")
-            
-            # Botão Roxo "ADICIONAR MATERIAL"
+
             print("Clicando em ADICIONAR MATERIAL...")
             btn_adicionar = self.driver.find_element(By.XPATH, "//button[contains(text(), 'ADICIONAR MATERIAL') or contains(text(), 'Adicionar Material')]")
             self.driver.execute_script("arguments[0].click();", btn_adicionar)
             
-            time.sleep(3) # Espera salvar
+            time.sleep(3) 
             
         except Exception as e:
             print(f"Erro ao interagir com o formulário: {e}")

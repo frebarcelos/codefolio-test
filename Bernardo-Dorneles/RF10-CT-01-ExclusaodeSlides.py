@@ -11,7 +11,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class ExclusaoSlideTest(unittest.TestCase):
 
-    # Nome exato do curso conforme sua imagem
     NOME_CURSO_ALVO = "RF 10 - Exclusão de Slide"
     
     URL_BASE = "https://testes.codefolio.com.br/"
@@ -23,8 +22,7 @@ class ExclusaoSlideTest(unittest.TestCase):
         chrome_options.add_argument("--start-maximized")
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         self.wait = WebDriverWait(self.driver, 15)
-        
-        # Cria diretório RF10-CT01
+ 
         self.EVIDENCE_DIR = "img/RF10-CT01/"
         os.makedirs(self.EVIDENCE_DIR, exist_ok=True)
         
@@ -189,7 +187,7 @@ class ExclusaoSlideTest(unittest.TestCase):
         print(f"Verificando se '{texto_alvo}' foi removido...")
         time.sleep(2)
         
-        # --- EVIDÊNCIA 02: APÓS EXCLUSÃO ---
+
         print("Evidência 2: Após Exclusão")
         self.driver.save_screenshot(f"{self.EVIDENCE_DIR}evidencia_02_depois_exclusao.png")
         

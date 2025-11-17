@@ -12,7 +12,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class EdicaoSlideConteudoTest(unittest.TestCase):
 
-    # Link URL novo slide
     LINK_NOVO = 'https://docs.google.com/presentation/d/e/2PACX-1vTAlD3_xMaoKzufd_BBuDCS9UC_Y2FLFAqP6ca6qgb4OReLnJKERm_UWo67u8JK8w/pub?start=false&loop=false&delayms=3000'
 
     def setUp(self):
@@ -30,8 +29,7 @@ class EdicaoSlideConteudoTest(unittest.TestCase):
 
         self.EVIDENCE_DIR = "Bernardo-Dorneles/img/"
         os.makedirs(self.EVIDENCE_DIR, exist_ok=True)
-        
-        # Configuração de autenticação via Local Storage
+    
         self.FIREBASE_KEY = "firebase:authUser:AIzaSyARn2qVrSSndFu9JSo5mexrQCMxmORZzCg:[DEFAULT]"
         self.FIREBASE_VALUE = """{"apiKey":"AIzaSyARn2qVrSSndFu9JSo5mexrQCMxmORZzCg","appName":"[DEFAULT]","createdAt":"1760400677093","displayName":"Bernardo Gomes Dorneles","email":"bernardodorneles.aluno@unipampa.edu.br","emailVerified":true,"isAnonymous":false,"lastLoginAt":"1762623423706","phoneNumber":null,"photoURL":"https://lh3.googleusercontent.com/a/ACg8ocLO0jBvdkLbUox-pQeUPodOBF-co7iSXE_KehosP3OcjblGPRQ=s96-c","providerData":[{"displayName":"Bernardo Gomes Dorneles","email":"bernardodorneles.aluno@unipampa.edu.br","phoneNumber":null,"photoURL":"https://lh3.googleusercontent.com/a/ACg8ocLO0jBvdkLbUox-pQeUPodOBF-co7iSXE_KehosP3OcjblGPRQ=s96-c","providerId":"google.com","uid":"105856292510209699123"}],"stsTokenManager":{"accessToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0NTEzMjA5OWFkNmJmNjEzODJiNmI0Y2RlOWEyZGZlZDhjYjMwZjAiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQmVybmFyZG8gR29tZXMgRG9ybmVsZXMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jTE8wakJ2ZGtMYlVveC1wUWVVUG9kT0JGLWNvN2lTWEVfS2Vob3NQM09jamJsR1BSUT1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9yZWFjdC1uYS1wcmF0aWNhIiwiYXVkIjoicmVhY3QtbmEtcHJhdGljYSIsImF1dGhfdGltZSI6MTc2MjYyMzUwMSwidXNlcl9pZCI6Ik92S09rWUNLMmVUN3huM1FjVVRZblpTYjFSMzMiLCJzdWIiOiJPdktPa1lDSzJlVDd4bjNRY1FUWW5aU2IxUjMzIiwiaWF0IjoxNzYyNjczOTkwLCJleHAiOjE3NjI2Nzc1OTAsImVtYWlsIjoiYmVybmFyZG9kb3JuZWxlcy5hbHVub0B1bmlwYW1wYS5lZHUuYnIiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjEwNTg1NjI5MjUxMDIwOTY5OTEyMyJdLCJlbWFpbCI6WyJiZXJuYXJkb2Rvcm5lbGVzLmFsdW5vQHVuaXBhbXBhLmVkdS5iciJdfSwic2lnbl9pbl9wcm9jSmlkZXIiOiJnb29nbGUuY29tIn19.a-W_CUqU0ZP81ZpURu49b6cBrClWk0nqcraFGw47ktTuK3mqtIovg_dqmbZ7s5GghCdk6_twFA6ihdPuFbyLpCX8PZLAIcyQFQBeVQ11ql3oCDeGiQogXKw-sM5TIIix4gTgsS7IXhr6uNbkFCysLUSuA8H-bp10VsiU7R8fHz0BQTj0qExL6SCqCw05F76HXBuzxwyknYj1FeX53jGFdOmAhbHl9eHAhSkl7pBmkLBFkHqW9FXW1ttDGtg4Vh9UD_Inb432gglN-ZBPHy2ukSSrTOex430IDjJTdfZOhRe-jhscMnfLYWRS-9B1Y-dF7r-SJcW1_PTdCVuhYOhh0A","expirationTime":1762677590230,"refreshToken":"AMf-vBzmGoli8pLckXIHEHFjBsq9tdclxZJyoH1JbcdFrcPLRxGaM1rX9B8XHnnJ_XN05JfnkqyH5bYKdBmFud2NNZehSZM4mSXlBQU5HTmmV4vCyBk6T76D7ne-jyrdpzFvhApdJyMx-vyjhqUzyv2uMVdTxfj-pb6kZXAGW_a9tW7q0OA9CJ_KF1eGqx3DcSemtemLSxyxNo0A3gXeMMADVdpIgH8KmQbcFVfqEgr2Lh4C11_njx-Myfov2byzlZpc1zCivD1xCX5LLoEOgcCWMCp8_BEeHtwLeFGRS4DDxxpPH2-WcGpLJINOxCbUFQYeCfVT0bzzGjPgBKA28TQTmv7T0x8uCVBTUHNoVwpmpt9zFqO4QncobWpTnVT4ns7eQyRlBBNdTjSc9133whnn9bT3Wzfar0U2zh9VgFzjftgpgSx3UCNzJkCTvmicr38knaKKfpxGP6dDdqG4Ohjf_Ji9mPxzQw"},"tenantId":null,"uid":"OvKOkYCK2eT7xn3QcQTYnZSb1R33","_redirectEventId":null}"""
         
@@ -147,8 +145,7 @@ class EdicaoSlideConteudoTest(unittest.TestCase):
                         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                         time.sleep(2)
                         
-                        # (Este teste não captura o "antes")
-                        
+                                                
                         return
             except:
                 continue
@@ -225,15 +222,13 @@ class EdicaoSlideConteudoTest(unittest.TestCase):
             print("Nenhum modal 'OK' de sucesso encontrado, continuando...")
             pass
 
-    # --- FUNÇÕES ESPECÍFICAS DO TESTE DE CONTEÚDO (CORRIGIDAS) ---
+    # --- FUNÇÕES ESPECÍFICAS DO TESTE DE CONTEÚDO ---
 
     def editar_conteudo_slide(self, link_html):
         """Edita o conteúdo HTML (link) do slide"""
         print("Editando conteúdo HTML (link) do slide...")
         time.sleep(2)
         try:
-            # --- SELETOR CORRIGIDO ---
-            # Encontra o label "URL do Slide" e pega o input associado a ele
             campo_conteudo = self.wait.until(
                 EC.visibility_of_element_located((
                     By.XPATH, "//label[contains(., 'URL do Slide')]/following-sibling::div//input"
@@ -262,30 +257,28 @@ class EdicaoSlideConteudoTest(unittest.TestCase):
         """Verifica se o CONTEÚDO (link) foi salvo e RETORNA True/False."""
         print("Verificando se o conteúdo (link) foi salvo...")
         try:
-            # Precisamos reabrir o modal para verificar o valor do input
             print("Reabrindo o modal para verificação de conteúdo...")
-            self.clicar_icone_edicao_slide() # Clica no mesmo primeiro ícone
+            self.clicar_icone_edicao_slide() 
             
-            # --- SELETOR CORRIGIDO ---
+
             campo_conteudo = self.wait.until(
                 EC.visibility_of_element_located((
                     By.XPATH, "//label[contains(., 'URL do Slide')]/following-sibling::div//input"
                 ))
             )
             
-            # Pega o valor de dentro do input
+
             conteudo_atual = campo_conteudo.get_attribute('value')
             
             print("Tirando screenshot - 3. Depois da Edição (Conteúdo)")
             self.driver.save_screenshot(self.EVIDENCE_DIR + "RF09-CT-02/evidencia_03_depois_edicao_conteudo.png")
 
-            # Fechar o modal para não atrapalhar
             try:
                 fechar_btn = self.driver.find_element(By.XPATH, "//button[contains(., 'Cancelar') or contains(., 'Fechar')]")
                 fechar_btn.click()
                 time.sleep(1)
             except:
-                pass # Se não achar, não é crítico
+                pass
 
             if link_esperado in conteudo_atual:
                 print("Verificação de conteúdo: SUCESSO")
