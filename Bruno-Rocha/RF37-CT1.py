@@ -61,11 +61,8 @@ class AcessoCursosTest(unittest.TestCase):
     
         teste_passou = True
     
-        # Definição dos XPATHs
         XPATH_BOTAO_VER_CURSO = "//h6[normalize-space(text())='Curso Grupo 4 com PIN']/ancestor::div[contains(@class, 'MuiCard-root')]//button[text()='Ver Curso']"
         XPATH_QUIZ_GIGI = "//button[@title='Abrir Quiz Gigi']"
-        # ATUALIZADO: Busca o botão que contém o ícone de fechar baseado no data-testid
-        XPATH_BOTAO_FECHAR = "//button[.//svg[@data-testid='CloseIcon']]"
     
         if teste_passou:
             try:
@@ -73,6 +70,8 @@ class AcessoCursosTest(unittest.TestCase):
                 curso_link = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
                 )
+                time.sleep(3)
+                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_1.png")
                 curso_link.click()
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 1 (Link do Curso): {e}")
@@ -84,7 +83,9 @@ class AcessoCursosTest(unittest.TestCase):
                 cursos_concluidos = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[3]/div[1]/div/div/button[3]'))
                 )
+                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_2.png")
                 cursos_concluidos.click()
+                time.sleep(3)
             except(TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 2 (Cursos Concluídos): {e}")
                 teste_passou = False
@@ -95,7 +96,9 @@ class AcessoCursosTest(unittest.TestCase):
                 botao_comecar_curso = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_VER_CURSO))
                 )
+                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_3.png")
                 botao_comecar_curso.click()
+                time.sleep(3)
             except(TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 3 (Começar curso concluído): {e}")
                 teste_passou = False
@@ -106,17 +109,17 @@ class AcessoCursosTest(unittest.TestCase):
                 botao_fazer_quiz_gigi = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, XPATH_QUIZ_GIGI))
                 )
+                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_4.png")
                 botao_fazer_quiz_gigi.click()
-                time.sleep(2) # Pequena pausa para animação do modal
+                time.sleep(3)
             except(TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 4 (Acessar o Quiz Gigi): {e}")
                 teste_passou = False
-        
+            self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_5.png")
         if teste_passou:
             try:
                 print("5/6 - Tentativa de clicar no botão 'Fechar Quiz'...")
             
-                # Script aprimorado: Retorna true se clicou, false se falhou
                 js_script_fechar = """
                 var icon = document.querySelector("svg[data-testid='CloseIcon']");
                 if (icon) {
@@ -128,9 +131,6 @@ class AcessoCursosTest(unittest.TestCase):
                 }
                 return false;
                 """
-            
-                # Loop de tentativa (Polling):
-                # Tenta clicar repetidamente por até 5 segundos (caso o botão demore a renderizar)
                 foi_clicado = False
                 tempo_limite = time.time() + 5
             
@@ -138,16 +138,13 @@ class AcessoCursosTest(unittest.TestCase):
                     if self.driver.execute_script(js_script_fechar):
                         foi_clicado = True
                         break
-                    time.sleep(0.5) # Espera meio segundo antes de tentar de novo
+                    time.sleep(0.5)
             
-                # --- SEU ASSERT ADDICIONADO AQUI ---
-                # Se a variável 'foi_clicado' ainda for False, o teste falha imediatamente aqui com a mensagem personalizada.
                 self.assertTrue(foi_clicado, "Falha Crítica: O script não encontrou o botão com 'CloseIcon' para clicar.")
             
                 print("Teste sáida do Quiz realizado com sucesso.")
-            
-                # Pausa breve para permitir que a página processe a saída (redirecionamento)
-                time.sleep(2)
+                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_6.png")
+                time.sleep(3)
 
             except (AssertionError, Exception) as e:
                 print(f"Falha na etapa 5 (Botão Fechar): {e}")

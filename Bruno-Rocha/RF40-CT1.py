@@ -47,13 +47,14 @@ class AcessoCursosTest(unittest.TestCase):
         """Testando like de um vídeo listado na Home"""
         print("Acessando lista de vídeos da Home...")
         
-        # 1. Garante foco na página principal
         self.driver.switch_to.default_content()
         
         print("Aguardando 5 segundos para estabilização a página Home...")
         time.sleep(5) 
+        self.driver.save_screenshot("Bruno-Rocha/img-RF40/passo_1.png")
 
         try:
+        
             js_script_force = """
             var icons = document.querySelectorAll("svg[data-testid='ThumbUpIcon']");
             
@@ -68,16 +69,19 @@ class AcessoCursosTest(unittest.TestCase):
             }
             return false;
             """
-            
+    
             print("Executando script de clique...")
         
             sucesso = self.driver.execute_script(js_script_force)
             
             self.assertTrue(sucesso, "Falha Crítica: O script JS não encontrou o botão de curtir para clicar.")
+            self.driver.save_screenshot("Bruno-Rocha/img-RF40/passo_2.png")
+            time.sleep(3)
             
             print("Sucesso: O comando de clique foi enviado corretamente.")
             
             time.sleep(3)
+            self.driver.save_screenshot("Bruno-Rocha/img-RF40/passo_3.png")
 
         except Exception as e:
             print(f"ERRO DE EXECUÇÃO: {e}")
