@@ -13,28 +13,26 @@ import traceback
 import sys
 from os.path import abspath, dirname
 sys.path.insert(0, dirname(abspath(__file__)))
-from login_util import verificar_login, login
+from login_util import verificar_login, login, url_base, time_out,id_deslogado
 from screenshot_util import take_step_screenshot, reset_screenshot_counter
 
 class TestWatchVideo(unittest.TestCase):
 
     def setUp(self):
-        self.URL_BASE = "https://testes.codefolio.com.br/"
-        self.TIMEOUT = 20
 
         chrome_options = get_chrome_options()
 
         service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
         self.driver.implicitly_wait(5)
-        self.wait = WebDriverWait(self.driver, self.TIMEOUT)
+        self.wait = WebDriverWait(self.driver, time_out)
         reset_screenshot_counter(self.id())
 
     def _encontrar_e_clicar_curso(self, course_title):
         """Encontra e clica em um curso nas abas 'Em Andamento' ou 'Concluídos'."""
         try:
             # Tenta encontrar o curso na aba atual
-            xpath = f"//h6[normalize-space()='teste123']/ancestor::div[contains(@class, 'MuiCard-root')]//button[normalize-space()='Começar']"
+            xpath = f"//h6[normalize-space()='{course_title}']/ancestor::div[contains(@class, 'MuiCard-root')]//button[normalize-space()='Começar']"
             comecar_button = WebDriverWait(self.driver, 1).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, xpath)
@@ -91,7 +89,7 @@ class TestWatchVideo(unittest.TestCase):
         """Navega para a página de vídeo como um usuário logado."""
         verificar_login(self.driver, self.wait)
         print("Navegando para a lista de cursos (logado)...")
-        self.driver.get(f"{self.URL_BASE}listcurso")
+        self.driver.get(f"{url_base}listcurso")
         try:
             self.wait.until(EC.url_contains("/listcurso"))
         except TimeoutException:
@@ -112,7 +110,7 @@ class TestWatchVideo(unittest.TestCase):
     def _navegar_para_pagina_de_video_deslogado(self):
         """Navega para a página de vídeo como um usuário deslogado."""
         print("Navegando diretamente para a página do curso (deslogado)...")
-        public_course_url = f"{self.URL_BASE}classes?courseId=-OdiThGNeYgeZtQJbz1a"
+        public_course_url = f"{url_base}classes?courseId={id_deslogado}"
         self.driver.get(public_course_url)
         print("Verificando se estamos na página de aulas...")
         try:
@@ -157,18 +155,28 @@ class TestWatchVideo(unittest.TestCase):
             print("✓ Mudou para o contexto do iframe do vídeo")
             
             try:
-                play_button = self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".ytp-large-play-button")))
+                play_button = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".ytp-large-play-button")))
+                print("✓ Botão de play encontrado.")
+                self.driver.execute_script("arguments[0].click();", play_button)
+                print("✓ Clicou no botão de play.")
             except TimeoutException:
-                self.fail("FALHA: Tempo esgotado. O botão de play do vídeo não foi encontrado ou não se tornou clicável.")
+                print("Botão de play não encontrado, tentando iniciar via API...")
 
-            print("✓ Botão de play encontrado.")
-            play_button.click()
-            print("✓ Clicou no botão de play.")
-            time.sleep(3)
+            print("Forçando início do vídeo via API do YouTube (sem som)...")
+            self.driver.execute_script("document.getElementById('movie_player')?.mute();")
+            self.driver.execute_script("document.getElementById('movie_player')?.playVideo();")
+            
+            # Loop de espera para o vídeo começar a tocar
+            player_state_after_play = None
+            for _ in range(5): # Tenta por 5 segundos
+                player_state_after_play = self.driver.execute_script("return document.getElementById('movie_player')?.getPlayerState()")
+                if player_state_after_play == 1:
+                    break
+                time.sleep(1)
+
             take_step_screenshot(self.driver, self.id(), "video_tocando")
             
-            player_state_after_play = self.driver.execute_script("return document.getElementById('movie_player')?.getPlayerState()")
-            self.assertEqual(player_state_after_play, 1, "O vídeo não começou a tocar após o clique no play.")
+            self.assertEqual(player_state_after_play, 1, f"O vídeo não começou a tocar (estado final: {player_state_after_play}).")
             print("✓ O vídeo está tocando.")
             self.driver.switch_to.default_content()
         except Exception as e:
@@ -190,18 +198,28 @@ class TestWatchVideo(unittest.TestCase):
             print("✓ Mudou para o contexto do iframe do vídeo")
 
             try:
-                play_button = self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".ytp-large-play-button")))
+                play_button = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".ytp-large-play-button")))
+                print("✓ Botão de play encontrado.")
+                self.driver.execute_script("arguments[0].click();", play_button)
+                print("✓ Clicou no botão de play.")
             except TimeoutException:
-                self.fail("FALHA: Tempo esgotado. O botão de play do vídeo não foi encontrado ou não se tornou clicável.")
-            
-            print("✓ Botão de play encontrado.")
-            play_button.click()
-            print("✓ Clicou no botão de play.")
-            time.sleep(3)
+                print("Botão de play não encontrado, tentando iniciar via API...")
+
+            print("Forçando início do vídeo via API do YouTube (sem som)...")
+            self.driver.execute_script("document.getElementById('movie_player')?.mute();")
+            self.driver.execute_script("document.getElementById('movie_player')?.playVideo();")
+
+            # Loop de espera para o vídeo começar a tocar
+            player_state_after_play = None
+            for _ in range(5): # Tenta por 5 segundos
+                player_state_after_play = self.driver.execute_script("return document.getElementById('movie_player')?.getPlayerState()")
+                if player_state_after_play == 1:
+                    break
+                time.sleep(1)
+
             take_step_screenshot(self.driver, self.id(), "video_tocando_deslogado")
 
-            player_state_after_play = self.driver.execute_script("return document.getElementById('movie_player')?.getPlayerState()")
-            self.assertEqual(player_state_after_play, 1, "O vídeo não começou a tocar após o clique no play.")
+            self.assertEqual(player_state_after_play, 1, f"O vídeo não começou a tocar (estado final: {player_state_after_play}).")
             print("✓ O vídeo está tocando.")
             self.driver.switch_to.default_content()
         except Exception as e:

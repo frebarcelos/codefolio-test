@@ -1,4 +1,5 @@
 import unittest
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
@@ -13,19 +14,17 @@ from os.path import abspath, dirname
 
 # Adiciona o diretório pai ao path para conseguir importar os utils
 sys.path.insert(0, dirname(abspath(__file__)))
-from login_util import login, verificar_login
+from login_util import login, verificar_login,url_base,time_out,id_deslogado
 from screenshot_util import take_step_screenshot, reset_screenshot_counter
 
 class TestExtraMaterials(unittest.TestCase):
 
     def setUp(self):
-        self.URL_BASE = "https://testes.codefolio.com.br/"
-        self.TIMEOUT = 20
         chrome_options = get_chrome_options()
         service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
         self.driver.implicitly_wait(5)
-        self.wait = WebDriverWait(self.driver, self.TIMEOUT)
+        self.wait = WebDriverWait(self.driver, time_out)
         reset_screenshot_counter(self.id())
 
     def _encontrar_e_clicar_curso(self, course_title):
@@ -79,7 +78,8 @@ class TestExtraMaterials(unittest.TestCase):
         """Navega para a página de vídeo como um usuário logado."""
         verificar_login(self.driver, self.wait)
         print("Navegando para a lista de cursos (logado)...")
-        self.driver.get(f"{self.URL_BASE}listcurso")
+        time.sleep(5)
+        self.driver.get(f"{url_base}/listcurso")
         try:
             self.wait.until(EC.url_contains("/listcurso"))
         except TimeoutException:
@@ -100,7 +100,8 @@ class TestExtraMaterials(unittest.TestCase):
     def _navegar_para_pagina_de_video_deslogado(self):
         """Navega para a página de vídeo como um usuário deslogado."""
         print("Navegando diretamente para a página do curso (deslogado)...")
-        public_course_url = f"{self.URL_BASE}classes?courseId=-OdiThGNeYgeZtQJbz1a"
+        time.sleep(5)
+        public_course_url = f"{url_base}/classes?courseId={id_deslogado}"
         self.driver.get(public_course_url)
         print("Verificando se estamos na página de aulas...")
         try:
