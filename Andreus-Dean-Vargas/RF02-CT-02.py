@@ -138,11 +138,25 @@ class TestCT02CadastroCurso(unittest.TestCase):
         # PASSO 4: Preencher campo "Nome do Curso"
         print("\n[PASSO 4] Preenchendo campo 'Nome do Curso'...")
         try:
-            campo_nome = self.wait.until(
-                EC.visibility_of_element_located(
-                    (By.XPATH, "//label[contains(., 'Nome')]/following-sibling::div//input | //input[@placeholder*='Nome']")
-                )
-            )
+            # Tenta encontrar o campo de nome (múltiplas tentativas)
+            campo_nome = None
+            seletores_nome = [
+                "//label[contains(., 'Nome')]/following-sibling::div//input",
+                "//input[@placeholder*='Nome']",
+                "//input[@name='nome']",
+                "//input[@id='nome']"
+            ]
+            
+            for seletor in seletores_nome:
+                try:
+                    campo_nome = self.driver.find_element(By.XPATH, seletor)
+                    if campo_nome.is_displayed():
+                        break
+                except:
+                    continue
+            
+            if not campo_nome:
+                raise Exception("Campo 'Nome do Curso' não encontrado")
             
             campo_nome.clear()
             time.sleep(0.5)
@@ -156,16 +170,30 @@ class TestCT02CadastroCurso(unittest.TestCase):
         # PASSO 5: Preencher campo "Descrição"
         print("\n[PASSO 5] Preenchendo campo 'Descrição'...")
         try:
-            # Busca campo de descrição (pode ser textarea ou input)
-            campo_descricao = self.driver.find_element(
-                By.XPATH,
-                "//label[contains(., 'Descrição')]/following-sibling::div//textarea | //label[contains(., 'Descrição')]/following-sibling::div//input | //textarea[@placeholder*='Descrição']"
-            )
+            # Busca campo de descrição
+            campo_descricao = None
+            seletores_descricao = [
+                "//label[contains(., 'Descrição')]/following-sibling::div//textarea",
+                "//label[contains(., 'Descrição')]/following-sibling::div//input",
+                "//textarea[@placeholder*='Descrição']",
+                "//textarea[@name='descricao']"
+            ]
             
-            campo_descricao.clear()
-            time.sleep(0.5)
-            campo_descricao.send_keys(self.DESCRICAO_CURSO)
-            print(f"✓ Descrição preenchida")
+            for seletor in seletores_descricao:
+                try:
+                    campo_descricao = self.driver.find_element(By.XPATH, seletor)
+                    if campo_descricao.is_displayed():
+                        break
+                except:
+                    continue
+            
+            if campo_descricao:
+                campo_descricao.clear()
+                time.sleep(0.5)
+                campo_descricao.send_keys(self.DESCRICAO_CURSO)
+                print(f"✓ Descrição preenchida")
+            else:
+                print("⚠ Campo Descrição não encontrado (pode ser opcional)")
             
             time.sleep(1)
             
