@@ -51,7 +51,7 @@ class AcessoCursosTest(unittest.TestCase):
         
         print("Aguardando 5 segundos para estabilização a página Home...")
         time.sleep(5) 
-        self.driver.save_screenshot("Bruno-Rocha/img-RF40/passo_1.png")
+        self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_1.png")
 
         try:
         
@@ -75,13 +75,13 @@ class AcessoCursosTest(unittest.TestCase):
             sucesso = self.driver.execute_script(js_script_force)
             
             self.assertTrue(sucesso, "Falha Crítica: O script JS não encontrou o botão de curtir para clicar.")
-            self.driver.save_screenshot("Bruno-Rocha/img-RF40/passo_2.png")
+            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_2.png")
             time.sleep(3)
             
             print("Sucesso: O comando de clique foi enviado corretamente.")
             
             time.sleep(3)
-            self.driver.save_screenshot("Bruno-Rocha/img-RF40/passo_3.png")
+            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_3.png")
 
         except Exception as e:
             print(f"ERRO DE EXECUÇÃO: {e}")

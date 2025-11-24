@@ -71,7 +71,7 @@ class AcessoCursosTest(unittest.TestCase):
                     EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
                 )
                 time.sleep(3)
-                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_1.png")
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF37/passo_1.png")
                 curso_link.click()
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 1 (Link do Curso): {e}")
@@ -83,7 +83,7 @@ class AcessoCursosTest(unittest.TestCase):
                 cursos_concluidos = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[3]/div[1]/div/div/button[3]'))
                 )
-                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_2.png")
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF37/passo_2.png")
                 cursos_concluidos.click()
                 time.sleep(3)
             except(TimeoutException, NoSuchElementException, Exception) as e:
@@ -96,7 +96,7 @@ class AcessoCursosTest(unittest.TestCase):
                 botao_comecar_curso = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_VER_CURSO))
                 )
-                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_3.png")
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF37/passo_3.png")
                 botao_comecar_curso.click()
                 time.sleep(3)
             except(TimeoutException, NoSuchElementException, Exception) as e:
@@ -109,13 +109,13 @@ class AcessoCursosTest(unittest.TestCase):
                 botao_fazer_quiz_gigi = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, XPATH_QUIZ_GIGI))
                 )
-                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_4.png")
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF37/passo_4.png")
                 botao_fazer_quiz_gigi.click()
                 time.sleep(3)
             except(TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 4 (Acessar o Quiz Gigi): {e}")
                 teste_passou = False
-            self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_5.png")
+            self.driver.save_screenshot("Bruno-Rocha/img/img-RF37/passo_5.png")
         if teste_passou:
             try:
                 print("5/6 - Tentativa de clicar no botão 'Fechar Quiz'...")
@@ -143,7 +143,7 @@ class AcessoCursosTest(unittest.TestCase):
                 self.assertTrue(foi_clicado, "Falha Crítica: O script não encontrou o botão com 'CloseIcon' para clicar.")
             
                 print("Teste sáida do Quiz realizado com sucesso.")
-                self.driver.save_screenshot("Bruno-Rocha/img-RF37/passo_6.png")
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF37/passo_6.png")
                 time.sleep(3)
 
             except (AssertionError, Exception) as e:
