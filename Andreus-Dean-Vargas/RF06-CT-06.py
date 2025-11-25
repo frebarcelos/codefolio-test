@@ -13,6 +13,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from chrome_config import get_chrome_options
 from login_util import login, verificar_login
 from screenshot_util import take_evidence
+from element_finder import find_input_by_label, find_button_by_text
+from curso_helper import garantir_curso_existe, garantir_video_existe
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -38,6 +40,11 @@ class TestCT06EdicaoVideo(unittest.TestCase):
     # Dados para edição
     NOVO_TITULO = "Vídeo Editado Automaticamente"
     NOVA_URL = "https://www.youtube.com/watch?v=9bZkp7q19f0"
+    
+    # Dados fallback (caso precise criar curso/vídeo)
+    NOME_CURSO_FALLBACK = "Curso para Teste de Vídeo"
+    TITULO_VIDEO_FALLBACK = "Vídeo Inicial para Teste"
+    URL_VIDEO_FALLBACK = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     
     def setUp(self):
         """Configuração inicial do teste"""
@@ -72,8 +79,8 @@ class TestCT06EdicaoVideo(unittest.TestCase):
         take_evidence(self.driver, self.id(), 1, "tela_inicial_apos_login")
         print("✓ Login realizado com sucesso")
         
-        # PASSO 2-3: Navegar para Gerenciamento e selecionar curso
-        print("\n[PASSO 2] Navegando para curso com vídeos...")
+        # PASSO 2: Navegar para Gerenciamento
+        print("\n[PASSO 2] Navegando para Gerenciamento de Cursos...")
         try:
             profile_button = self.wait.until(
                 EC.element_to_be_clickable(
@@ -92,7 +99,22 @@ class TestCT06EdicaoVideo(unittest.TestCase):
             self.wait.until(EC.url_contains("/manage-courses"))
             time.sleep(2)
             
-            # Seleciona primeiro curso
+        except Exception as e:
+            take_evidence(self.driver, self.id(), 99, "erro_navegar_gerenciamento")
+            self.fail(f"FALHA ao navegar: {e}")
+        
+        # PASSO 3: Verificar se existe curso, se não criar um
+        print("\n[PASSO 3] Verificando se existe curso...")
+        try:
+            garantir_curso_existe(
+                self.driver,
+                self.wait,
+                self.NOME_CURSO_FALLBACK,
+                "Curso criado automaticamente para testar edição de vídeo",
+                self.URL_BASE
+            )
+            
+            print("\n[PASSO 3.1] Selecionando curso...")
             botao_gerenciar = self.wait.until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "(//button[contains(., 'Gerenciar Curso')])[1]")
@@ -105,45 +127,69 @@ class TestCT06EdicaoVideo(unittest.TestCase):
             
             print("✓ Curso acessado")
             
+            # PASSO 3.2: Verificar se existe vídeo, se não criar um
+            print("\n[PASSO 3.2] Verificando se existe vídeo...")
+            garantir_video_existe(
+                self.driver,
+                self.wait,
+                self.TITULO_VIDEO_FALLBACK,
+                self.URL_VIDEO_FALLBACK
+            )
+            
+            print("✓ Vídeo disponível para edição")
+            
         except Exception as e:
             take_evidence(self.driver, self.id(), 99, "erro_navegar_curso")
             self.fail(f"FALHA ao navegar: {e}")
         
-        # PASSO 4: Acessar aba de Vídeos
-        print("\n[PASSO 3] Acessando aba de Vídeos...")
+        # PASSO 4: Garantir que estamos na aba de vídeos (se necessário)
+        print("\n[PASSO 4] Verificando aba de Vídeos...")
         try:
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
-            
-            aba_videos = self.wait.until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//*[contains(text(), 'VÍDEOS') or contains(text(), 'Vídeos')]")
-                )
-            )
-            self.driver.execute_script("arguments[0].click();", aba_videos)
-            time.sleep(3)
-            
+            # garantir_video_existe() já nos deixa na aba de vídeos
+            # Apenas scroll e screenshot
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)
             
             take_evidence(self.driver, self.id(), 2, "aba_videos_antes_edicao")
-            print("✓ Aba de vídeos acessada")
+            print("✓ Na aba de vídeos")
             
         except Exception as e:
-            take_evidence(self.driver, self.id(), 99, "erro_acessar_aba_videos")
-            self.fail(f"FALHA ao acessar aba: {e}")
+            take_evidence(self.driver, self.id(), 99, "erro_verificar_aba")
+            self.fail(f"FALHA ao verificar aba: {e}")
         
         # PASSO 5: Clicar no ícone de edição do primeiro vídeo
-        print("\n[PASSO 4] Clicando no ícone de edição...")
+        print("\n[PASSO 5] Clicando no ícone de edição...")
         try:
-            # Busca primeiro botão de edição na lista de vídeos
-            icone_editar = self.wait.until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "(//*[contains(text(), 'Vídeos Cadastrados')]/following-sibling::div//button)[1]")
-                )
-            )
+            # Procura por botões de ação (ícones) na área de vídeos
+            # Os botões de editar/deletar são MuiIconButton sem texto
+            todos_botoes = self.driver.find_elements(By.TAG_NAME, "button")
+            botoes_visiveis = [b for b in todos_botoes if b.is_displayed()]
             
-            self.driver.execute_script("arguments[0].click();", icone_editar)
+            botao_editar = None
+            
+            # Procura botões vazios (ícones) que estão na área de vídeos (Y > 250)
+            for botao in botoes_visiveis:
+                try:
+                    texto = botao.text.strip()
+                    loc = botao.location
+                    aria = botao.get_attribute("aria-label") or ""
+                    
+                    # Botão de ação: sem texto, na área de conteúdo, não é do header
+                    if not texto and loc['y'] > 250 and "Configurações" not in aria and "Menu" not in aria:
+                        # Verifica se tem algum ícone filho (svg, ou classe com ícone)
+                        tem_icone = len(botao.find_elements(By.XPATH, ".//*[name()='svg' or @class[contains(., 'icon') or contains(., 'Icon')]]")) > 0
+                        if tem_icone or len(botao.find_elements(By.TAG_NAME, "svg")) > 0:
+                            botao_editar = botao
+                            break
+                except:
+                    continue
+            
+            if not botao_editar:
+                raise Exception("Nenhum ícone de edição encontrado")
+            
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_editar)
+            time.sleep(1)
+            self.driver.execute_script("arguments[0].click();", botao_editar)
             print("✓ Ícone de edição clicado")
             
             time.sleep(2)
@@ -155,17 +201,28 @@ class TestCT06EdicaoVideo(unittest.TestCase):
             self.fail(f"FALHA ao abrir edição: {e}")
         
         # PASSO 6: Editar título do vídeo
-        print("\n[PASSO 5] Editando título do vídeo...")
+        print("\n[PASSO 6] Editando título do vídeo...")
         try:
+            # Scroll para o topo
+            self.driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(1)
+            
+            # Busca pelo label exato "Título do Vídeo"
             campo_titulo = self.wait.until(
-                EC.visibility_of_element_located(
-                    (By.XPATH, "//label[contains(., 'Título')]/following-sibling::div//input")
+                EC.presence_of_element_located(
+                    (By.XPATH, "//label[contains(text(), 'Título do Vídeo')]/following-sibling::div//input")
                 )
             )
             
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", campo_titulo)
+            time.sleep(1)
+            campo_titulo.click()
+            time.sleep(0.5)
             campo_titulo.clear()
             time.sleep(0.5)
             campo_titulo.send_keys(self.NOVO_TITULO)
+            time.sleep(1)
+            
             print(f"✓ Título alterado para: '{self.NOVO_TITULO}'")
             
         except Exception as e:
@@ -173,55 +230,88 @@ class TestCT06EdicaoVideo(unittest.TestCase):
             self.fail(f"FALHA ao editar título: {e}")
         
         # PASSO 7: Editar URL do vídeo
-        print("\n[PASSO 6] Editando URL do vídeo...")
+        print("\n[PASSO 7] Editando URL do vídeo...")
         try:
-            campo_url = self.driver.find_element(
-                By.XPATH,
-                "//label[contains(., 'URL')]/following-sibling::div//input"
+            # Busca pelo label exato "URL do Vídeo"
+            campo_url = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//label[contains(text(), 'URL do Vídeo')]/following-sibling::div//input")
+                )
             )
             
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", campo_url)
+            time.sleep(1)
+            campo_url.click()
+            time.sleep(0.5)
             campo_url.clear()
             time.sleep(0.5)
             campo_url.send_keys(self.NOVA_URL)
-            print("✓ URL atualizada")
-            
             time.sleep(1)
+            
+            print("✓ URL atualizada")
             
             take_evidence(self.driver, self.id(), 4, "formulario_video_editado")
             
         except Exception as e:
-            print("⚠ Campo URL não encontrado")
+            take_evidence(self.driver, self.id(), 99, "erro_editar_url")
+            self.fail(f"FALHA ao editar URL: {e}")
         
-        # PASSO 8: Salvar alterações
-        print("\n[PASSO 7] Salvando alterações...")
+        # PASSO 8: Clicar em "Editar Vídeo"
+        print("\n[PASSO 8] Clicando em 'Editar Vídeo'...")
         try:
-            botao_salvar = self.wait.until(
+            botao_editar = self.wait.until(
                 EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(., 'Salvar') or contains(., 'SALVAR')]")
+                    (By.XPATH, "//button[contains(., 'Editar Vídeo')]")
                 )
             )
             
-            botao_salvar.click()
-            print("✓ Botão 'Salvar' clicado")
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_editar)
+            time.sleep(0.5)
+            self.driver.execute_script("arguments[0].click();", botao_editar)
+            print("✓ Botão 'Editar Vídeo' clicado")
+            
+            time.sleep(2)
+            
+        except Exception as e:
+            take_evidence(self.driver, self.id(), 99, "erro_clicar_editar_video")
+            self.fail(f"FALHA ao clicar em 'Editar Vídeo': {e}")
+        
+        # PASSO 9: Clicar em "Salvar Curso"
+        print("\n[PASSO 9] Salvando curso...")
+        try:
+            # Scroll para o topo onde geralmente fica o botão Salvar Curso
+            self.driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(1)
+            
+            botao_salvar_curso = find_button_by_text(self.driver, self.wait, "salvar")
+            
+            if not botao_salvar_curso:
+                raise Exception("Botão 'Salvar Curso' não encontrado")
+            
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_salvar_curso)
+            time.sleep(0.5)
+            self.driver.execute_script("arguments[0].click();", botao_salvar_curso)
+            print("✓ Botão 'Salvar Curso' clicado")
             
             time.sleep(3)
             
-            # Fechar modal de sucesso
+            # Fechar modal de sucesso se aparecer
             try:
-                botao_ok = self.driver.find_element(By.XPATH, "//button[contains(., 'OK')]")
-                botao_ok.click()
-                time.sleep(1)
+                botao_ok = find_button_by_text(self.driver, self.wait, "ok")
+                if botao_ok:
+                    self.driver.execute_script("arguments[0].click();", botao_ok)
+                    time.sleep(1)
             except:
                 pass
             
-            take_evidence(self.driver, self.id(), 5, "apos_salvar_edicao")
+            take_evidence(self.driver, self.id(), 5, "apos_salvar_curso")
             
         except Exception as e:
-            take_evidence(self.driver, self.id(), 99, "erro_salvar")
-            self.fail(f"FALHA ao salvar: {e}")
+            take_evidence(self.driver, self.id(), 99, "erro_salvar_curso")
+            self.fail(f"FALHA ao salvar curso: {e}")
         
-        # PASSO 9: Verificar se alterações foram salvas
-        print("\n[PASSO 8] Verificando se vídeo foi editado...")
+        # PASSO 10: Verificar se alterações foram salvas
+        print("\n[PASSO 10] Verificando se vídeo foi editado...")
         try:
             time.sleep(2)
             

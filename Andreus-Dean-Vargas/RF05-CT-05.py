@@ -13,6 +13,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from chrome_config import get_chrome_options
 from login_util import login, verificar_login
 from screenshot_util import take_evidence
+from element_finder import find_input_by_label, find_textarea_by_label, find_button_by_text
+from curso_helper import garantir_curso_existe
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -38,6 +40,10 @@ class TestCT05CadastroVideo(unittest.TestCase):
     # Dados do vídeo
     TITULO_VIDEO = "Vídeo de Teste Automatizado"
     URL_VIDEO = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    
+    # Dados do curso (caso precise criar)
+    NOME_CURSO_FALLBACK = "Curso para Testes de Vídeo"
+    DESCRICAO_CURSO_FALLBACK = "Curso criado automaticamente para testar funcionalidade de vídeos"
     
     def setUp(self):
         """Configuração inicial do teste"""
@@ -100,9 +106,21 @@ class TestCT05CadastroVideo(unittest.TestCase):
             take_evidence(self.driver, self.id(), 99, "erro_navegar_gerenciamento")
             self.fail(f"FALHA ao navegar: {e}")
         
-        # PASSO 3: Selecionar um curso
-        print("\n[PASSO 3] Selecionando curso...")
+        # PASSO 3: Verificar se existe curso, se não criar um
+        print("\n[PASSO 3] Verificando se existe curso...")
         try:
+            garantir_curso_existe(
+                self.driver,
+                self.wait,
+                self.NOME_CURSO_FALLBACK,
+                self.DESCRICAO_CURSO_FALLBACK,
+                self.URL_BASE
+            )
+            
+            print("✓ Curso disponível para adicionar vídeo")
+            
+            # Agora seleciona o curso (existente ou recém-criado)
+            print("\n[PASSO 3.1] Selecionando curso para adicionar vídeo...")
             botao_gerenciar = self.wait.until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "(//button[contains(., 'Gerenciar Curso')])[1]")
@@ -123,8 +141,8 @@ class TestCT05CadastroVideo(unittest.TestCase):
             take_evidence(self.driver, self.id(), 2, "pagina_curso_antes_adicionar_video")
             
         except Exception as e:
-            take_evidence(self.driver, self.id(), 99, "erro_selecionar_curso")
-            self.fail(f"FALHA ao selecionar curso: {e}")
+            take_evidence(self.driver, self.id(), 99, "erro_verificar_criar_curso")
+            self.fail(f"FALHA ao verificar/criar curso: {e}")
         
         # PASSO 4: Navegar para aba de Vídeos
         print("\n[PASSO 4] Acessando aba de Vídeos...")
@@ -154,28 +172,32 @@ class TestCT05CadastroVideo(unittest.TestCase):
         # PASSO 5: Preencher campo "Título do Vídeo"
         print("\n[PASSO 5] Preenchendo título do vídeo...")
         try:
-            # Busca campo título
-            campo_titulo = None
-            seletores_titulo = [
-                "//label[contains(., 'Título')]/following-sibling::div//input",
-                "//input[@placeholder*='Título']",
-                "//input[@name='titulo']"
-            ]
+            # Scroll para o topo primeiro
+            self.driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(1)
             
-            for seletor in seletores_titulo:
-                try:
-                    campo_titulo = self.driver.find_element(By.XPATH, seletor)
-                    if campo_titulo.is_displayed():
-                        break
-                except:
-                    continue
+            # Busca pelo label exato "Título do Vídeo"
+            campo_titulo = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//label[contains(text(), 'Título do Vídeo')]/following-sibling::div//input")
+                )
+            )
             
             if not campo_titulo:
-                raise Exception("Campo 'Título' não encontrado")
+                raise Exception("Campo 'Título do Vídeo' não encontrado")
             
+            # Scroll até centralizar o campo
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", campo_titulo)
+            time.sleep(1)
+            
+            # Clica, limpa e preenche
+            campo_titulo.click()
+            time.sleep(0.5)
             campo_titulo.clear()
             time.sleep(0.5)
             campo_titulo.send_keys(self.TITULO_VIDEO)
+            time.sleep(1)
+            
             print(f"✓ Título preenchido: '{self.TITULO_VIDEO}'")
             
         except Exception as e:
@@ -185,29 +207,28 @@ class TestCT05CadastroVideo(unittest.TestCase):
         # PASSO 6: Preencher campo "URL do Vídeo"
         print("\n[PASSO 6] Preenchendo URL do vídeo...")
         try:
-            # Busca campo URL
-            campo_url = None
-            seletores_url = [
-                "//label[contains(., 'URL')]/following-sibling::div//input",
-                "//input[@placeholder*='URL']",
-                "//input[@placeholder*='link']",
-                "//input[@name='url']"
-            ]
-            
-            for seletor in seletores_url:
-                try:
-                    campo_url = self.driver.find_element(By.XPATH, seletor)
-                    if campo_url.is_displayed():
-                        break
-                except:
-                    continue
+            # Busca pelo label exato "URL do Vídeo"
+            campo_url = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//label[contains(text(), 'URL do Vídeo')]/following-sibling::div//input")
+                )
+            )
             
             if not campo_url:
-                raise Exception("Campo 'URL' não encontrado")
+                raise Exception("Campo 'URL do Vídeo' não encontrado")
             
+            # Scroll até centralizar o campo
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", campo_url)
+            time.sleep(1)
+            
+            # Clica, limpa e preenche
+            campo_url.click()
+            time.sleep(0.5)
             campo_url.clear()
             time.sleep(0.5)
             campo_url.send_keys(self.URL_VIDEO)
+            time.sleep(1)
+            
             print(f"✓ URL preenchida: '{self.URL_VIDEO}'")
             
             time.sleep(1)
@@ -222,12 +243,16 @@ class TestCT05CadastroVideo(unittest.TestCase):
         # PASSO 7: Clicar em "Adicionar Vídeo"
         print("\n[PASSO 7] Adicionando vídeo...")
         try:
-            botao_adicionar = self.wait.until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(., 'Adicionar') or contains(., 'ADICIONAR')]")
-                )
-            )
+            botao_adicionar = find_button_by_text(self.driver, self.wait, "adicionar")
             
+            if not botao_adicionar:
+                raise Exception("Botão 'Adicionar' não encontrado")
+            
+            # Scroll até o botão
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_adicionar)
+            time.sleep(0.5)
+            
+            # Clica via JavaScript para maior robustez
             self.driver.execute_script("arguments[0].click();", botao_adicionar)
             print("✓ Botão 'Adicionar' clicado")
             
@@ -236,9 +261,10 @@ class TestCT05CadastroVideo(unittest.TestCase):
             
             # Fechar modal de sucesso se aparecer
             try:
-                botao_ok = self.driver.find_element(By.XPATH, "//button[contains(., 'OK') or contains(., 'Ok')]")
-                botao_ok.click()
-                time.sleep(1)
+                botao_ok = find_button_by_text(self.driver, self.wait, "ok")
+                if botao_ok:
+                    self.driver.execute_script("arguments[0].click();", botao_ok)
+                    time.sleep(1)
             except:
                 pass
             

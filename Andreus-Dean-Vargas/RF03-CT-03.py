@@ -9,11 +9,12 @@ import unittest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 from chrome_config import get_chrome_options
 from login_util import login, verificar_login
 from screenshot_util import take_evidence
+from element_finder import find_input_by_label, find_textarea_by_label, find_button_by_text
+from curso_helper import garantir_curso_existe
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -40,6 +41,10 @@ class TestCT03EdicaoCurso(unittest.TestCase):
     NOVO_NOME = "Curso Editado Automaticamente"
     NOVA_DESCRICAO = "Descrição atualizada através de teste automatizado"
     
+    # Dados do curso fallback (caso precise criar)
+    NOME_CURSO_FALLBACK = "Curso para Teste de Edição"
+    DESCRICAO_CURSO_FALLBACK = "Curso criado automaticamente para testar edição"
+    
     def setUp(self):
         """Configuração inicial do teste"""
         print("\n" + "="*70)
@@ -52,7 +57,6 @@ class TestCT03EdicaoCurso(unittest.TestCase):
             options=options
         )
         self.wait = WebDriverWait(self.driver, 15)
-        # Screenshot counter gerenciado automaticamente
     
     def tearDown(self):
         """Finalização do teste"""
@@ -102,12 +106,20 @@ class TestCT03EdicaoCurso(unittest.TestCase):
             take_evidence(self.driver, self.id(), 99, "erro_navegar_gerenciamento")
             self.fail(f"FALHA ao navegar: {e}")
         
-        # PASSO 3: Selecionar o primeiro curso para editar
-        print("\n[PASSO 3] Selecionando curso para editar...")
+        # PASSO 3: Verificar se existe curso, se não criar um
+        print("\n[PASSO 3] Verificando se existe curso...")
         try:
+            garantir_curso_existe(
+                self.driver,
+                self.wait,
+                self.NOME_CURSO_FALLBACK,
+                self.DESCRICAO_CURSO_FALLBACK,
+                self.URL_BASE
+            )
+            
+            print("\n[PASSO 3.1] Selecionando curso para editar...")
             time.sleep(2)
             
-            # Busca o botão "Gerenciar Curso" do primeiro curso
             botao_gerenciar = self.wait.until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "(//button[contains(., 'Gerenciar Curso')])[1]")
@@ -119,10 +131,8 @@ class TestCT03EdicaoCurso(unittest.TestCase):
             botao_gerenciar.click()
             print("✓ Curso selecionado")
             
-            # Aguarda carregar página do curso
             time.sleep(3)
             
-            # Evidência 03: Página de gerenciamento do curso
             take_evidence(self.driver, self.id(), 3, "pagina_curso_antes_edicao")
             
         except Exception as e:
@@ -132,25 +142,10 @@ class TestCT03EdicaoCurso(unittest.TestCase):
         # PASSO 4: Clicar no botão de editar curso
         print("\n[PASSO 4] Clicando em 'Editar Curso'...")
         try:
-            # Scroll para o topo para encontrar o botão de editar
             self.driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(2)
             
-            # Busca botão de editar
-            botao_editar = None
-            seletores_editar = [
-                "//button[contains(., 'Editar')]",
-                "//button[contains(., 'EDITAR')]",
-                "//*[@data-testid='EditIcon']//ancestor::button"
-            ]
-            
-            for seletor in seletores_editar:
-                try:
-                    botao_editar = self.driver.find_element(By.XPATH, seletor)
-                    if botao_editar.is_displayed():
-                        break
-                except:
-                    continue
+            botao_editar = find_button_by_text(self.driver, self.wait, "editar")
             
             if not botao_editar:
                 raise Exception("Botão 'Editar' não encontrado")
@@ -160,7 +155,6 @@ class TestCT03EdicaoCurso(unittest.TestCase):
             
             time.sleep(2)
             
-            # Evidência 04: Modal de edição aberto
             take_evidence(self.driver, self.id(), 4, "modal_edicao_aberto")
             
         except Exception as e:
@@ -170,11 +164,13 @@ class TestCT03EdicaoCurso(unittest.TestCase):
         # PASSO 5: Editar nome do curso
         print("\n[PASSO 5] Editando nome do curso...")
         try:
-            campo_nome = self.wait.until(
-                EC.visibility_of_element_located(
-                    (By.XPATH, "//label[contains(., 'Nome')]/following-sibling::div//input")
-                )
-            )
+            campo_nome = find_input_by_label(self.driver, self.wait, "nome")
+            
+            if not campo_nome:
+                raise Exception("Campo 'Nome' não encontrado")
+            
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", campo_nome)
+            time.sleep(0.5)
             
             campo_nome.clear()
             time.sleep(0.5)
@@ -188,53 +184,41 @@ class TestCT03EdicaoCurso(unittest.TestCase):
         # PASSO 6: Editar descrição do curso
         print("\n[PASSO 6] Editando descrição do curso...")
         try:
-            # Busca campo descrição
-            campo_descricao = None
-            seletores_descricao = [
-                "//label[contains(., 'Descrição')]/following-sibling::div//textarea",
-                "//label[contains(., 'Descrição')]/following-sibling::div//input",
-                "//textarea[@placeholder*='Descrição']"
-            ]
+            campo_descricao = find_textarea_by_label(self.driver, self.wait, "descrição")
             
-            for seletor in seletores_descricao:
-                try:
-                    campo_descricao = self.driver.find_element(By.XPATH, seletor)
-                    if campo_descricao.is_displayed():
-                        break
-                except:
-                    continue
+            if not campo_descricao:
+                campo_descricao = find_input_by_label(self.driver, self.wait, "descrição")
             
             if campo_descricao:
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", campo_descricao)
+                time.sleep(0.5)
                 campo_descricao.clear()
                 time.sleep(0.5)
                 campo_descricao.send_keys(self.NOVA_DESCRICAO)
                 print("✓ Descrição atualizada")
             else:
-                print("⚠ Campo Descrição não encontrado")
+                print("⚠ Campo Descrição não encontrado (pode ser opcional)")
             
             time.sleep(1)
             
-            # Evidência 05: Formulário preenchido
             take_evidence(self.driver, self.id(), 5, "formulario_editado")
             
         except Exception as e:
-            print("⚠ Campo Descrição não encontrado")
+            print(f"⚠ Erro ao preencher descrição (pode ser opcional): {e}")
         
         # PASSO 7: Salvar alterações
         print("\n[PASSO 7] Salvando alterações...")
         try:
-            botao_salvar = self.wait.until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(., 'Salvar') or contains(., 'SALVAR')]")
-                )
-            )
+            botao_salvar = find_button_by_text(self.driver, self.wait, "salvar")
+            
+            if not botao_salvar:
+                raise Exception("Botão 'Salvar' não encontrado")
             
             self.driver.execute_script("arguments[0].click();", botao_salvar)
             print("✓ Botão 'Salvar' clicado")
             
             time.sleep(3)
             
-            # Evidência 06: Após salvar
             take_evidence(self.driver, self.id(), 6, "apos_salvar_edicao")
             
         except Exception as e:
@@ -246,7 +230,6 @@ class TestCT03EdicaoCurso(unittest.TestCase):
         try:
             time.sleep(2)
             
-            # Procura pelo novo nome na página
             curso_editado = self.driver.find_element(
                 By.XPATH,
                 f"//*[contains(text(), '{self.NOVO_NOME}')]"
@@ -255,7 +238,6 @@ class TestCT03EdicaoCurso(unittest.TestCase):
             if curso_editado:
                 print(f"✓ SUCESSO: Curso editado encontrado com nome '{self.NOVO_NOME}'!")
                 
-                # Evidência 07: Curso editado
                 take_evidence(self.driver, self.id(), 7, "curso_editado_verificado")
                 
                 self.assertTrue(True, "Curso editado com sucesso")

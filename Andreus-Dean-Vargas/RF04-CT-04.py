@@ -13,6 +13,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from chrome_config import get_chrome_options
 from login_util import login, verificar_login
 from screenshot_util import take_evidence
+from element_finder import find_button_by_text
+from curso_helper import garantir_curso_existe
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -34,6 +36,10 @@ class TestCT04ExclusaoCurso(unittest.TestCase):
     """
     
     URL_BASE = "https://testes-codefolio.web.app/"
+    
+    # Dados do curso fallback (caso precise criar)
+    NOME_CURSO_FALLBACK = "Curso para Teste de Exclusão"
+    DESCRICAO_CURSO_FALLBACK = "Curso criado automaticamente para testar funcionalidade de exclusão"
     
     def setUp(self):
         """Configuração inicial do teste"""
@@ -98,94 +104,98 @@ class TestCT04ExclusaoCurso(unittest.TestCase):
             take_evidence(self.driver, self.id(), 99, "erro_navegar_gerenciamento")
             self.fail(f"FALHA ao navegar: {e}")
         
-        # PASSO 3: Identificar curso a ser excluído
-        print("\n[PASSO 3] Identificando curso para exclusão...")
+        # PASSO 3: Verificar se existe curso, se não criar um
+        print("\n[PASSO 3] Verificando se existe curso para excluir...")
         try:
-            # Pega o nome do primeiro curso disponível
-            primeiro_curso = self.driver.find_element(
-                By.XPATH,
-                "(//button[contains(., 'Gerenciar Curso')])[1]/preceding-sibling::*"
+            garantir_curso_existe(
+                self.driver,
+                self.wait,
+                self.NOME_CURSO_FALLBACK,
+                self.DESCRICAO_CURSO_FALLBACK,
+                self.URL_BASE
             )
-            self.nome_curso_alvo = primeiro_curso.text
-            print(f"✓ Curso alvo identificado: '{self.nome_curso_alvo}'")
+            
+            print("✓ Curso disponível para exclusão")
+            time.sleep(2)
             
         except Exception as e:
-            print("⚠ Não foi possível identificar nome do curso, continuando...")
+            take_evidence(self.driver, self.id(), 99, "erro_verificar_criar_curso")
+            self.fail(f"FALHA ao verificar/criar curso: {e}")
+        
+        # PASSO 4: Identificar curso a ser excluído
+        print("\n[PASSO 4] Identificando curso para exclusão...")
+        try:
+            # Tenta pegar o nome do curso (pode estar em diferentes elementos)
+            try:
+                primeiro_curso = self.driver.find_element(
+                    By.XPATH,
+                    "(//button[contains(., 'Gerenciar Curso')])[1]/ancestor::div//h6 | (//button[contains(., 'Gerenciar Curso')])[1]/ancestor::div//h5"
+                )
+                self.nome_curso_alvo = primeiro_curso.text
+                print(f"✓ Curso alvo identificado: '{self.nome_curso_alvo}'")
+            except:
+                print("⚠ Não foi possível identificar nome do curso, continuando...")
+                self.nome_curso_alvo = "Curso Desconhecido"
+            
+        except Exception as e:
+            print("⚠ Continuando sem identificar nome do curso...")
             self.nome_curso_alvo = "Curso Desconhecido"
         
-        # PASSO 4: Acessar o curso para excluir
-        print("\n[PASSO 4] Acessando curso para exclusão...")
+        # PASSO 5: Clicar no botão "Deletar" do primeiro curso
+        print("\n[PASSO 5] Clicando no botão Deletar...")
         try:
-            botao_gerenciar = self.wait.until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "(//button[contains(., 'Gerenciar Curso')])[1]")
-                )
-            )
-            
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_gerenciar)
-            time.sleep(1)
-            botao_gerenciar.click()
-            print("✓ Curso acessado")
-            
-            time.sleep(3)
-            
-            # Evidência 03: Página do curso antes de excluir
-            take_evidence(self.driver, self.id(), 3, "pagina_curso_antes_exclusao")
-            
-        except Exception as e:
-            take_evidence(self.driver, self.id(), 99, "erro_acessar_curso")
-            self.fail(f"FALHA ao acessar curso: {e}")
-        
-        # PASSO 5: Clicar no botão de excluir
-        print("\n[PASSO 5] Clicando no botão de excluir...")
-        try:
-            # Scroll para o topo onde geralmente fica o botão de excluir
+            # Scroll para o topo
             self.driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(2)
+            time.sleep(1)
             
-            # Busca botão de excluir
-            botao_excluir = None
-            seletores_excluir = [
-                "//button[contains(., 'Excluir')]",
-                "//button[contains(., 'Deletar')]",
-                "//button[contains(., 'Remover')]",
-                "//*[@data-testid='DeleteIcon']//ancestor::button"
-            ]
+            # Busca o primeiro botão "Deletar" na lista
+            botao_deletar = find_button_by_text(self.driver, self.wait, "deletar")
             
-            for seletor in seletores_excluir:
-                try:
-                    botao_excluir = self.driver.find_element(By.XPATH, seletor)
-                    if botao_excluir.is_displayed():
-                        break
-                except:
-                    continue
+            if not botao_deletar:
+                raise Exception("Botão 'Deletar' não encontrado")
             
-            if not botao_excluir:
-                raise Exception("Botão 'Excluir' não encontrado")
+            # Scroll até o botão
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_deletar)
+            time.sleep(1)
             
-            self.driver.execute_script("arguments[0].click();", botao_excluir)
-            print("✓ Botão 'Excluir' clicado")
+            # Clica no botão
+            self.driver.execute_script("arguments[0].click();", botao_deletar)
+            print("✓ Botão 'Deletar' clicado")
             
             time.sleep(2)
             
-            # Evidência 04: Modal de confirmação
-            take_evidence(self.driver, self.id(), 4, "modal_confirmacao_exclusao")
+            # Evidência 03: Modal de confirmação
+            take_evidence(self.driver, self.id(), 3, "modal_confirmacao_exclusao")
             
         except Exception as e:
-            take_evidence(self.driver, self.id(), 99, "erro_clicar_excluir")
-            self.fail(f"FALHA ao clicar em excluir: {e}")
+            take_evidence(self.driver, self.id(), 99, "erro_clicar_deletar")
+            self.fail(f"FALHA ao clicar em deletar: {e}")
         
-        # PASSO 6: Confirmar exclusão
-        print("\n[PASSO 6] Confirmando exclusão...")
+        # PASSO 6: Confirmar exclusão clicando em "Deletar" no modal
+        print("\n[PASSO 6] Confirmando exclusão no modal...")
         try:
-            botao_confirmar = self.wait.until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(., 'Sim') or contains(., 'Confirmar') or contains(., 'Excluir') or contains(., 'Delete')]")
-                )
-            )
+            # Aguarda modal aparecer completamente
+            time.sleep(2)
             
-            botao_confirmar.click()
-            print("✓ Exclusão confirmada")
+            # Busca botão "Deletar" no modal de confirmação (precisa ser o segundo botão Deletar)
+            botoes_deletar = self.driver.find_elements(By.XPATH, "//button[contains(., 'Deletar')]")
+            
+            if len(botoes_deletar) < 2:
+                raise Exception("Botão de confirmação 'Deletar' no modal não encontrado")
+            
+            # O segundo botão Deletar é o do modal de confirmação
+            botao_confirmar = botoes_deletar[-1]  # Pega o último
+            
+            # Scroll até o botão
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_confirmar)
+            time.sleep(0.5)
+            
+            # Aguarda o botão estar clicável
+            self.wait.until(EC.element_to_be_clickable(botao_confirmar))
+            
+            # Clica usando JavaScript para evitar problema com backdrop
+            self.driver.execute_script("arguments[0].click();", botao_confirmar)
+            print("✓ Exclusão confirmada no modal")
             
             # Aguarda processar
             time.sleep(3)
