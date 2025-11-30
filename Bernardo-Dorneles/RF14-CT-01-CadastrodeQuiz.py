@@ -28,7 +28,7 @@ class CadastroQuizTest(unittest.TestCase):
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         self.wait = WebDriverWait(self.driver, 15)
         
-        self.EVIDENCE_DIR = "img/RF14-CT01/"
+        self.EVIDENCE_DIR = "Bernardo-Dorneles/img/RF14-CT01/"
         os.makedirs(self.EVIDENCE_DIR, exist_ok=True)
         
         self.configurar_autenticacao()
