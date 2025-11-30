@@ -6,16 +6,24 @@ from selenium.webdriver.support.ui import WebDriverWait
 # Dicionário global para manter a contagem de screenshots por teste
 _screenshot_counters = {}
 
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+# Dicionário global para manter a contagem de screenshots por teste
+_screenshot_counters = {}
+
 # Atraso configurável antes de tirar o screenshot, após o carregamento da página
 SCREENSHOT_DELAY_SECONDS = 3
 
-def take_step_screenshot(driver, test_id, step_name):
+def take_step_screenshot(driver, test_id, step_name, wait_for_element=None):
     """
     Tira um screenshot, numera e salva em uma pasta específica para o teste.
+    Pode esperar por um elemento específico antes de tirar a foto.
     
     :param driver: A instância do WebDriver do Selenium.
     :param test_id: O ID do teste (ex: self.id()), usado para nomear a pasta.
     :param step_name: Um nome descritivo para o passo (usado no nome do arquivo).
+    :param wait_for_element: Tupla opcional (By, value) para esperar por um elemento.
     """
     global _screenshot_counters
     
@@ -39,12 +47,19 @@ def take_step_screenshot(driver, test_id, step_name):
     file_path = os.path.join(screenshot_dir, f"{counter:02d}_{safe_step_name}.png")
 
     try:
-        # Espera a página carregar completamente antes de tirar o screenshot
-        WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script('return document.readyState') == 'complete'
-        )
-        # Adiciona um atraso extra para garantir que elementos dinâmicos carreguem
-        time.sleep(SCREENSHOT_DELAY_SECONDS)
+        # Lógica de espera flexível
+        if wait_for_element:
+            # Espera pelo elemento específico fornecido
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located(wait_for_element)
+            )
+        else:
+            # Comportamento padrão: espera a página carregar e um tempo fixo
+            WebDriverWait(driver, 10).until(
+                lambda d: d.execute_script('return document.readyState') == 'complete'
+            )
+            time.sleep(SCREENSHOT_DELAY_SECONDS)
+
         driver.save_screenshot(file_path)
         print(f"✓ Screenshot salvo: {file_path}")
     except Exception as e:

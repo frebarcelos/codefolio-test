@@ -99,19 +99,25 @@ class TestQuizBloqueado(unittest.TestCase):
         print("Verificando a aparição do toast de aviso...")
         toast_text = 'Você precisa assistir o vídeo "Senhor dos aneis orquestra" para liberar o quiz!'
         toast_xpath = f"//div[contains(@class, 'Toastify__toast--warning') and contains(., '{toast_text}')]"
-        
-        try:
-            # 1. Espera o toast aparecer
-            toast_element = self.wait.until(EC.presence_of_element_located((By.XPATH, toast_xpath)))
-            print("✓ Toast de aviso apareceu.")
-            take_step_screenshot(self.driver, self.id(), "toast_aviso_presente")
+        toast_locator = (By.XPATH, toast_xpath)
 
-            # 2. Espera o toast desaparecer
-            print("Aguardando o desaparecimento do toast...")
-            self.wait.until(EC.invisibility_of_element_located(toast_element))
+        print("Aguardando toast de aviso e tirando screenshot...")
+        try:
+            # A função de screenshot já espera o elemento.
+            take_step_screenshot(self.driver, self.id(), "toast_aviso_presente", wait_for_element=toast_locator)
+            toast_element = self.driver.find_element(*toast_locator) 
+            self.assertTrue(toast_element.is_displayed(), "FALHA: O toast de aviso apareceu no DOM, mas não ficou visível.")
+            print("✓ Toast de aviso apareceu e screenshot foi salvo.")
+        except TimeoutException:
+            self.fail("FALHA: Tempo esgotado ao esperar pelo aparecimento do toast de aviso.")
+
+        print("Aguardando o desaparecimento do toast...")
+        try:
+            desapareceu = self.wait.until(EC.invisibility_of_element_located(toast_locator))
+            self.assertTrue(desapareceu, "FALHA: O toast de aviso não desapareceu no tempo esperado.")
             print("✓ Toast de aviso desapareceu.")
         except TimeoutException:
-            self.fail(f"FALHA: O toast de aviso com o texto esperado não apareceu e/ou não desapareceu no tempo esperado.")
+            self.fail("FALHA: Tempo esgotado ao esperar pelo desaparecimento do toast de aviso.")
         
         print("--- TESTE test_01_quiz_bloqueado_logado CONCLUÍDO ---")
 

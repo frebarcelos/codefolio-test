@@ -124,17 +124,22 @@ class TestAcessarQuizCurso(unittest.TestCase):
         except Exception as e:
             self.fail(f"FALHA: Ocorreu um erro ao tentar clicar no botão 'Fazer Quiz': {e}")
 
-        print("Verificando se o quiz foi carregado...")
+        print("Verificando se o quiz foi carregado e tirando screenshot...")
         try:
-            self.wait.until(EC.presence_of_element_located((By.XPATH, "//h4[normalize-space()='Quiz']")))
-            self.wait.until(EC.presence_of_element_located((By.XPATH, "//h6[normalize-space()='Questão 1 de 2']")))
-            print("✓ Quiz carregado com sucesso (títulos 'Quiz' e 'Questão 1 de 2' encontrados).")
+            # 1. Espera o header principal aparecer e tira screenshot
+            quiz_header_locator = (By.XPATH, "//h4[normalize-space()='Quiz']")
+            take_step_screenshot(self.driver, self.id(), "quiz_carregado", wait_for_element=quiz_header_locator)
+            
+            header_principal = self.driver.find_element(*quiz_header_locator)
+            self.assertTrue(header_principal.is_displayed(), "FALHA: O cabeçalho principal do quiz não está visível.")
+            
+            header_questao = self.wait.until(EC.presence_of_element_located((By.XPATH, "//h6[normalize-space()='Questão 1 de 2']")))
+            self.assertTrue(header_questao.is_displayed(), "FALHA: O cabeçalho da questão do quiz não está visível.")
+            
+            print("✓ Quiz carregado com sucesso e elementos validados.")
         except TimeoutException:
-            self.fail("FALHA: Tempo esgotado. Os elementos do quiz não foram carregados após clicar em 'Fazer Quiz'.")
-        except Exception as e:
-            self.fail(f"FALHA: Ocorreu um erro ao verificar o carregamento do quiz: {e}")
+            self.fail("FALHA: Tempo esgotado. Um ou mais elementos do quiz não foram carregados após clicar em 'Fazer Quiz'.")
         
-        take_step_screenshot(self.driver, self.id(), "quiz_carregado")
         print("--- TESTE test_01_acessar_quiz_logado CONCLUÍDO ---")
 
 
