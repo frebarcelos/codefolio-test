@@ -50,7 +50,7 @@ class AcessoCursosTest(unittest.TestCase):
         time.sleep(4)
         self.driver.save_screenshot("Bruno-Rocha/img/img-RF38/inicio.png")
         
-        scroll_realizado = False
+        acesso_home = False
         
         try:
             print("1/3 Tentando clicar no botão Home...")
@@ -64,23 +64,9 @@ class AcessoCursosTest(unittest.TestCase):
             
         except Exception as e:
             self.fail(f"FALHA NO PASSO 1 (Clique): {e}")
-
-        try:
-            print("2/3 Aguardando carregamento da Dashboard...")
-            time.sleep(2)
-            
-            self.wait.until(EC.url_contains("/dashboard"))
-            
-            if "/dashboard" not in self.driver.current_url:
-                raise Exception(f"URL incorreta: {self.driver.current_url}")
-                
-            print("URL validada com sucesso (/dashboard).")
-
-        except Exception as e:
-            self.fail(f"FALHA NO PASSO 2 (Validação URL): {e}")
             
         try:
-            print("3/3 Tentando rolar o scroll...")
+            print("2/3 Tentando rolar o scroll...")
             time.sleep(2)
 
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -90,12 +76,26 @@ class AcessoCursosTest(unittest.TestCase):
             self.driver.save_screenshot("Bruno-Rocha/img/img-RF38/passo_2.png")
             print("Rolou o scroll para baixo.")
             
-            scroll_realizado = True
-            
         except Exception as e:
             self.fail(f"FALHA NO PASSO 3 (Scroll): {e}")
 
-        self.assertTrue(scroll_realizado, "O teste falhou: O scroll não foi completado corretamente.")
+        try:
+            print("3/3 Aguardando carregamento da Dashboard...")
+            time.sleep(2)
+            
+            self.wait.until(EC.url_contains("/dashboard"))
+            
+            if "/dashboard" not in self.driver.current_url:
+                raise Exception(f"URL incorreta: {self.driver.current_url}")
+                
+            print("URL validada com sucesso (/dashboard).")
+            
+            acesso_home = True
+
+        except Exception as e:
+            self.fail(f"FALHA NO PASSO 2 (Validação URL): {e}")
+
+        self.assertTrue(acesso_home, "O teste falhou: Não foi encontrada a pagina Home.")
         
         print("Sucesso: Lista de vídeos da Home acessados.")
 

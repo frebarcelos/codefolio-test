@@ -58,6 +58,8 @@ class AcessoCursosTest(unittest.TestCase):
     def test_sair_perguntas_personalizadas(self):
         """Testa a saída do modo perguntas personalizadas no Quiz."""
         print("Acessando perguntas personalizadas...")
+        time.sleep(3)
+        self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/inicio.png")
 
         teste_passou = True
 
@@ -74,6 +76,8 @@ class AcessoCursosTest(unittest.TestCase):
                     EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/section[2]/div[2]/div/div[1]/div/div[2]/div/a[2]'))
                 )
                 curso_link.click()
+                time.sleep(3)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_1.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 1 (Link do Curso): {e}")
                 teste_passou = False
@@ -85,6 +89,8 @@ class AcessoCursosTest(unittest.TestCase):
                     EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[3]/div[1]/div/div/button[3]'))
                 )
                 cursos_concluidos.click()
+                time.sleep(2)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_2.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 2 (Cursos Concluídos): {e}")
                 teste_passou = False
@@ -96,6 +102,8 @@ class AcessoCursosTest(unittest.TestCase):
                     EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_VER_CURSO))
                 )
                 botao_ver_curso.click()
+                time.sleep(2)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_3.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 3 ('Ver Curso'): {e}")
                 teste_passou = False
@@ -108,6 +116,7 @@ class AcessoCursosTest(unittest.TestCase):
                 )
                 botao_fechar.click()
                 time.sleep(2)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_4.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 4 ('Fechar'): {e}")
                 teste_passou = False
@@ -120,6 +129,7 @@ class AcessoCursosTest(unittest.TestCase):
                 )
                 botao_quiz_gigi.click()
                 time.sleep(2)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_5.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 5 ('Quiz Gigi'): {e}")
                 teste_passou = False
@@ -132,6 +142,7 @@ class AcessoCursosTest(unittest.TestCase):
                 )
                 botao_pergunta_personalizada.click()
                 time.sleep(5)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_6.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 6 ('Pergunta Personalizada'): {e}")
                 teste_passou = False
@@ -152,6 +163,8 @@ class AcessoCursosTest(unittest.TestCase):
                 print("8/8 - Verificando se a URL retornou para '/classes'...")
                 self.wait.until(EC.url_contains("/classes"))
                 print("Teste realizado com sucesso.")
+                time.sleep(2)
+                self.driver.save_screenshot("Bruno-Rocha/img/img-RF36/passo_7.png")
             except (TimeoutException, NoSuchElementException, Exception) as e:
                 print(f"Falha na etapa 8/8 (Voltar ao modo normal ou Verificação de URL): {e}")
                 teste_passou = False

@@ -83,7 +83,7 @@ class AcessoCursosTest(unittest.TestCase):
         try:
             print("3/3 Tentando clicar no Player.")
             
-            # Localiza o container geral do player (ID padrão do YouTube)
+            # Localiza o container
             player_container = self.wait.until(EC.element_to_be_clickable(
                 (By.ID, "movie_player")
             ))     
