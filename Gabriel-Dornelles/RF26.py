@@ -1,4 +1,5 @@
 # RF26.py - Seleção Aleatória de Estudante
+from collections.abc import KeysView
 import unittest
 import time
 import os
@@ -376,7 +377,7 @@ class TestRF26SelecaoAleatoria(unittest.TestCase):
                         continue
 
                 if not saved:
-                    note_input.send_keys(Keys.ENTER)
+                    note_input.send_keys(KeysView.ENTER)
 
                 time.sleep(2)
 
