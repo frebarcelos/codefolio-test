@@ -1,5 +1,5 @@
 """
-CT-04 - Exclusão de Cursos (RF04)
+CT-04 - Exclusão de Cursos (RF04) - ABRIR EM DOIS TESTES SEPARADOS UM TESTANDO SE EXISTE ALGO DENTRO DO CURSO - DAI NAO PODE EXCLUIR - E OUTRO TENTANDO EXCLUIR UM CURSO VAZIO - TEM Q EXCLUIR.
 Autor: Andreus Dean Ferreira Almeida Rodrigues Vargas
 Data: 23/11/2024
 """

@@ -15,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Importa os utilitários
 from chrome_config import get_chrome_options
-from login_util import login, verificar_login, verificar_login  # <-- USANDO LOGIN MANUAL
+from login_util import login, verificar_login, verificar_login  
 from screenshot_util import take_evidence, reset_screenshot_counter
 
 
