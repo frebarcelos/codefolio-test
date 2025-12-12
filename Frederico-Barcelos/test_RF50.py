@@ -12,21 +12,20 @@ import time
 import sys
 from os.path import abspath, dirname
 sys.path.insert(0, dirname(abspath(__file__)))
-from login_util import login, verificar_login
+from login_util import login, verificar_login, url_base,time_out,id_deslogado
 from screenshot_util import take_step_screenshot, reset_screenshot_counter
 
 class TestNavigateVideos(unittest.TestCase):
 
     def setUp(self):
-        self.URL_BASE = "https://testes.codefolio.com.br/"
-        self.TIMEOUT = 20
 
         chrome_options = get_chrome_options()
 
         service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
         self.driver.implicitly_wait(5)
-        self.wait = WebDriverWait(self.driver, self.TIMEOUT)
+        self.wait = WebDriverWait(self.driver, time_out)
+        reset_screenshot_counter(self.id())
         reset_screenshot_counter(self.id())
 
     def _encontrar_e_clicar_curso(self, course_title):
@@ -90,7 +89,7 @@ class TestNavigateVideos(unittest.TestCase):
         """Navega para a página de vídeo como um usuário logado."""
         verificar_login(self.driver, self.wait)
         print("Navegando para a lista de cursos (logado)...")
-        self.driver.get(f"{self.URL_BASE}listcurso")
+        self.driver.get(f"{url_base}listcurso")
         try:
             self.wait.until(EC.url_contains("/listcurso"))
         except TimeoutException:
@@ -111,7 +110,7 @@ class TestNavigateVideos(unittest.TestCase):
     def _navegar_para_pagina_de_video_deslogado(self):
         """Navega para a página de vídeo como um usuário deslogado."""
         print("Navegando diretamente para a página do curso (deslogado)...")
-        public_course_url = f"{self.URL_BASE}classes?courseId=-OdiThGNeYgeZtQJbz1a"
+        public_course_url = f"{url_base}classes?courseId={id_deslogado}"
         self.driver.get(public_course_url)
         print("Verificando se estamos na página de aulas...")
         try:
@@ -136,29 +135,10 @@ class TestNavigateVideos(unittest.TestCase):
         time.sleep(5)
         print("Executando script para encontrar e clicar no botão 'próximo' via Shadow DOM...")
         js_script_click_next = """
-        const selector = '[data-testid="ArrowForwardIcon"]';
-        function findInShadowDom(selector) {
-            function find(root) {
-                const found = root.querySelector(selector);
-                if (found) return found;
-                const allElements = root.querySelectorAll('*');
-                for (const element of allElements) {
-                    if (element.shadowRoot) {
-                        const foundInShadow = find(element.shadowRoot);
-                        if (foundInShadow) return foundInShadow;
-                    }
-                }
-                return null;
-            }
-            return find(document);
-        }
-        const icon = findInShadowDom(selector);
-        if (icon) {
-            const button = icon.closest('button');
-            if (button && !button.disabled) {
-                button.click();
-                return true;
-            }
+        const button = document.querySelector('button:has(svg[data-testid="ArrowForwardIcon"])');
+        if (button) {
+            button.click();
+            return true;
         }
         return false;
         """
@@ -191,7 +171,7 @@ class TestNavigateVideos(unittest.TestCase):
     def test_04_navegacao_deslogado(self):
         """Verifica a navegação entre vídeos para um usuário DESLOGADO."""
         print("\n--- EXECUTANDO: test_04_navegacao_deslogado ---")
-        self.driver.get(self.URL_BASE) # Start fresh
+        self.driver.get(url_base) # Start fresh
         self._navegar_para_pagina_de_video_deslogado()
         self._realizar_teste_navegacao()
 
