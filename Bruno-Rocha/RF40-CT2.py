@@ -43,24 +43,20 @@ class AcessoCursosTest(unittest.TestCase):
         
         self.driver.refresh()
     
-    def test_curtir_video_home(self):
-        """Testando like de um vídeo e VALIDANDO o incremento do contador"""
-        print("Acessando lista de vídeos da Home...")
+    def test_deslike_home(self):
+        """ Testando o botão de deslike """
+        print("Iniciando teste de interface do Deslike...")
         
         self.driver.switch_to.default_content()
-    
         time.sleep(5)
-        self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_1.png")
-
+        self.driver.save_screenshot("Bruno-Rocha/img/img-RF40-CT02/passo_1.png")
+        
         try:
-            elem_contador = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "info-likes")))
             
-            texto_antes = elem_contador.text
-            qtd_antes = int(texto_antes.split()[0]) 
-            print(f"Quantidade inicial de likes: {qtd_antes}")
-
-            js_script_force = """
-            var icons = document.querySelectorAll("svg[data-testid='ThumbUpIcon']");
+            print("Localizando botão de Deslike...")
+            
+            script_deslike = """
+            var icons = document.querySelectorAll("svg[data-testid='ThumbDownIcon']");
             if (icons.length > 0) {
                 var btn = icons[0].closest('button');
                 if (btn) {
@@ -71,29 +67,22 @@ class AcessoCursosTest(unittest.TestCase):
             }
             return false;
             """
-            print("Executando script de clique...")
-            sucesso_click = self.driver.execute_script(js_script_force)
-            self.assertTrue(sucesso_click, "Falha Crítica: O script JS não encontrou o botão de curtir.")
             
-            print("Aguardando atualização do contador...")
+            
+            clicou = self.driver.execute_script(script_deslike)
+            
+            time.sleep(2)
+            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40-CT02/passo_2.png")
 
-            self.wait.until(lambda driver: elem_contador.text != texto_antes)
-
-            time.sleep(2) 
-            
-            texto_depois = elem_contador.text
-            qtd_depois = int(texto_depois.split()[0])
-            print(f"Quantidade final de likes: {qtd_depois}")
-
-            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_2.png")
-            
-            self.assertTrue(qtd_depois > qtd_antes, f"ERRO: O like não foi computado! Antes: {qtd_antes}, Depois: {qtd_depois}")
-            
-            print("SUCESSO: Like computado corretamente.")
+            if clicou:
+                print("SUCESSO: O botão de Deslike foi encontrado e clicado sem erros.")
+                
+                self.assertTrue(True) 
+            else:
+                self.fail("FALHA: O botão de Deslike (ThumbDown) não foi encontrado na tela.")
 
         except Exception as e:
-            print(f"ERRO DE EXECUÇÃO: {e}")
-            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/erro_execucao.png")
+            self.fail(f"Erro técnico ao tentar clicar: {e}")
 
     def tearDown(self):
         if hasattr(self, 'driver') and self.driver:
