@@ -44,23 +44,28 @@ class AcessoCursosTest(unittest.TestCase):
         self.driver.refresh()
     
     def test_curtir_video_home(self):
-        """Testando like de um vídeo listado na Home"""
+        """Testando like de um vídeo e VALIDANDO o incremento do contador"""
         print("Acessando lista de vídeos da Home...")
         
         self.driver.switch_to.default_content()
         
-        print("Aguardando 5 segundos para estabilização a página Home...")
-        time.sleep(5) 
+        # Aguarda carregamento inicial
+        time.sleep(5)
         self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_1.png")
 
         try:
-        
+            # --- PASSO 1: CAPTURAR O NÚMERO DE LIKES ANTES DO CLIQUE ---
+            elem_contador = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "info-likes")))
+            
+            texto_antes = elem_contador.text  # Ex: "0 likes"
+            qtd_antes = int(texto_antes.split()[0]) 
+            print(f"Quantidade inicial de likes: {qtd_antes}")
+
+            # --- PASSO 2: CLICAR ---
             js_script_force = """
             var icons = document.querySelectorAll("svg[data-testid='ThumbUpIcon']");
-            
             if (icons.length > 0) {
                 var btn = icons[0].closest('button');
-                
                 if (btn) {
                     btn.scrollIntoView({block: 'center', inline: 'center'});
                     btn.click();
@@ -71,21 +76,33 @@ class AcessoCursosTest(unittest.TestCase):
             """
     
             print("Executando script de clique...")
-        
-            sucesso = self.driver.execute_script(js_script_force)
+            sucesso_click = self.driver.execute_script(js_script_force)
+            self.assertTrue(sucesso_click, "Falha Crítica: O script JS não encontrou o botão de curtir.")
             
-            self.assertTrue(sucesso, "Falha Crítica: O script JS não encontrou o botão de curtir para clicar.")
+            # --- PASSO 3: AGUARDAR E VERIFICAR A MUDANÇA ---
+            print("Aguardando atualização do contador...")
+
+            # 1. Espera inteligente: aguarda até o texto ser diferente do anterior
+            self.wait.until(lambda driver: elem_contador.text != texto_antes)
+
+            # 2. ADICIONADO: Pausa extra para garantir que o valor estabilizou
+            time.sleep(2) 
+
+            # Captura o novo texto
+            texto_depois = elem_contador.text # Ex: "1 like"
+            qtd_depois = int(texto_depois.split()[0])
+            print(f"Quantidade final de likes: {qtd_depois}")
+
+            # --- PASSO 4: ASSERT (VALIDAÇÃO MATEMÁTICA) ---
             self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_2.png")
-            time.sleep(3)
             
-            print("Sucesso: O comando de clique foi enviado corretamente.")
+            self.assertTrue(qtd_depois > qtd_antes, f"ERRO: O like não foi computado! Antes: {qtd_antes}, Depois: {qtd_depois}")
             
-            time.sleep(3)
-            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/passo_3.png")
+            print("SUCESSO: Like computado corretamente.")
 
         except Exception as e:
             print(f"ERRO DE EXECUÇÃO: {e}")
-            self.fail(f"O teste quebrou com o erro: {e}")
+            self.driver.save_screenshot("Bruno-Rocha/img/img-RF40/erro_execucao.png")
 
     def tearDown(self):
         if hasattr(self, 'driver') and self.driver:
